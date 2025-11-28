@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Response
 from backend.services.transaction_service import TransactionService
-from backend.core.database import get_database
+from backend.core.database import mongo
 import json
 from datetime import datetime
 
@@ -40,7 +40,7 @@ async def delete_account():
     Delete all user data (Right to be Forgotten).
     """
     try:
-        db = await get_database()
+        db = mongo.get_db()
         # Delete transactions
         await db.transactions.delete_many({})
         # Delete any other user-specific collections if they existed

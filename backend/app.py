@@ -1,11 +1,52 @@
-)
+import logging
+from pathlib import Path
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import uvicorn
 
+# Import Routers
+from backend.routers import transactions, ai_insights, chat, invoices, accounts, privacy, holistic
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+from contextlib import asynccontextmanager
+from backend.core.database import connect_to_mongo, close_mongo_connection
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await connect_to_mongo()
+    yield
+    # Shutdown
+    await close_mongo_connection()
+
+app = FastAPI(lifespan=lifespan)
+
+# ---------------------------------------------------------
+# INCLUDE ROUTERS
+# ---------------------------------------------------------
+app.include_router(transactions.router)
+app.include_router(ai_insights.router)
+app.include_router(chat.router)
+app.include_router(invoices.router)
+app.include_router(accounts.router)
+app.include_router(privacy.router)
+app.include_router(holistic.router)
 
 # ---------------------------------------------------------
 # CORS Configuration (Allow all for development)
 # ---------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ---------------------------------------------------------
 # STATIC FILES
@@ -25,8 +66,8 @@ if FRONTEND_DIR.exists():
         logger.warning("No /assets folder found in frontend.")
 
 else:
-    await close_mongo_connection()
-    logger.info("🛑 FinBuddy AI Backend Stopped")
+    logger.warning("Frontend directory not found. API will work, but UI will be missing.")
+    # await close_mongo_connection()
 
 
 # ---------------------------------------------------------
