@@ -227,6 +227,18 @@ class ChatManager:
             # Use counseling advice if available, otherwise fallback to static insight
             insight = counseling_advice if counseling_advice else insights.get(category, insights["General"])
             
+            # --- EXTRACT SOURCE (Multi-Account) ---
+            source = "Cash" # Default
+            msg_lower = user_message.lower()
+            if "paytm" in msg_lower:
+                source = "Paytm Wallet"
+            elif "hdfc" in msg_lower or "bank" in msg_lower:
+                source = "HDFC Bank"
+            elif "cash" in msg_lower:
+                source = "Cash"
+            elif "upi" in msg_lower or "gpay" in msg_lower or "phonepe" in msg_lower:
+                source = "HDFC Bank" # Assume UPI linked to Bank for now
+            
             # 5. SAVE TO DB
             txn_data = {
                 "amount": amount,
@@ -234,7 +246,8 @@ class ChatManager:
                 "message": user_message,
                 "counterparty": entities.get("ORG", "Unknown"),
                 "txn_type": TransactionType.DEBITED.value, # Default to expense
-                "date": datetime.utcnow()
+                "date": datetime.utcnow(),
+                "source": source
             }
             
             # Check if it looks like income
@@ -249,6 +262,7 @@ class ChatManager:
                 f"• Amount: ₹{amount}\n"
                 f"• Type: {txn_data['txn_type']}\n"
                 f"• Category: {category}\n"
+                f"• Source: {source}\n"
                 f"• AI Insight: {insight}\n"
                 f"{anomaly_warning}\n"
                 f"{budget_warning}"

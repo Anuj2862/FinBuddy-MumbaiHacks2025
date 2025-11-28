@@ -1,12 +1,3 @@
-# backend/app.py
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-# ---------------------------------------------------------
-app = FastAPI(
-    title="FinBuddy AI",
-    version="2.0",
-    description="India's Voice-First Financial Assistant for the Informal Economy",
 )
 
 
@@ -15,20 +6,6 @@ app = FastAPI(
 # ---------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Security Headers Middleware
-@app.middleware("http")
-async def add_security_headers(request, call_next):
-    response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    return response
-
 
 # ---------------------------------------------------------
 # STATIC FILES
