@@ -8,8 +8,9 @@ import os
 import uvicorn
 
 from backend.core.database import connect_to_mongo, close_mongo_connection
-from backend.routers import transactions, ai_insights, voice, invoices, chat
+from backend.routers import transactions, ai_insights, voice, invoices, chat, agents
 from backend.utils.logger import logger
+from backend.services.autonomous_scheduler import autonomous_scheduler
 
 
 # ---------------------------------------------------------
@@ -62,6 +63,7 @@ app.include_router(transactions.router)
 app.include_router(ai_insights.router)
 app.include_router(voice.router)
 app.include_router(invoices.router)
+app.include_router(agents.router)  # Autonomous Agentic AI
 
 
 # ---------------------------------------------------------
@@ -70,11 +72,16 @@ app.include_router(invoices.router)
 @app.on_event("startup")
 async def startup_event():
     await connect_to_mongo()
+    # Start autonomous AI agents
+    autonomous_scheduler.start()
     logger.info("🚀 FinBuddy AI Backend Started")
+    logger.info("🤖 Autonomous Agentic AI System Active - 8 agents monitoring")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
+    # Stop autonomous agents
+    autonomous_scheduler.stop()
     await close_mongo_connection()
     logger.info("🛑 FinBuddy AI Backend Stopped")
 
