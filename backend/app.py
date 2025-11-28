@@ -2,19 +2,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from pathlib import Path
-import os
-import uvicorn
-
-from backend.core.database import connect_to_mongo, close_mongo_connection
-from backend.routers import transactions, ai_insights, voice, invoices, chat, agents
-from backend.utils.logger import logger
-from backend.services.autonomous_scheduler import autonomous_scheduler
-
-
-# ---------------------------------------------------------
-# Create FastAPI app
 # ---------------------------------------------------------
 app = FastAPI(
     title="FinBuddy AI",
@@ -32,6 +19,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Security Headers Middleware
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    return response
 
 
 # ---------------------------------------------------------
@@ -52,20 +48,6 @@ if FRONTEND_DIR.exists():
         logger.warning("No /assets folder found in frontend.")
 
 else:
-    logger.warning("Frontend folder not found — skipping static mount.")
-@app.on_event("startup")
-async def startup_event():
-    await connect_to_mongo()
-    # Start autonomous AI agents
-    autonomous_scheduler.start()
-    logger.info("🚀 FinBuddy AI Backend Started")
-    logger.info("🤖 Autonomous Agentic AI System Active - 8 agents monitoring")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    # Stop autonomous agents
-    autonomous_scheduler.stop()
     await close_mongo_connection()
     logger.info("🛑 FinBuddy AI Backend Stopped")
 

@@ -7,97 +7,84 @@
     <title>FinBuddy AI - Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    }
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/assets/css/styles.css">
+    .kpi-card .card-body {
+    padding: 1.5rem;
+    }
 
-    <!-- Init Theme -->
-    <script src="/assets/js/utils.js"></script>
-    <script>FinBuddyUtils.initTheme();</script>
+    .kpi-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+    }
 
-    <style>
-        /* Additional Dashboard-specific Styles */
-        .dashboard-header {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 25px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-        }
+    .compliance-alert {
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    border-left: 5px solid;
+    box-shadow: var(--shadow-sm);
+    }
 
-        .kpi-card .card-body {
-            padding: 1.5rem;
-        }
+    .chart-title {
+    color: var(--text-color);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    }
 
-        .kpi-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            opacity: 0.8;
-        }
+    .transaction-table {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    }
 
-        .compliance-alert {
-            border-radius: 12px;
-            padding: 15px 20px;
-            margin-bottom: 25px;
-            border-left: 5px solid;
-            box-shadow: var(--shadow-sm);
-        }
+    .table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    transform: translateX(5px);
+    transition: all 0.3s ease;
+    }
 
-        .chart-title {
-            color: var(--text-color);
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 0.5rem;
-        }
+    .badge {
+    font-weight: 500;
+    padding: 0.5em 0.8em;
+    }
 
-        .transaction-table {
-            background: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-        }
+    /* Chart container responsive fixes */
+    .chart-wrapper {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    }
 
-        .table-hover tbody tr:hover {
-            background-color: rgba(13, 110, 253, 0.05);
-            transform: translateX(5px);
-            transition: all 0.3s ease;
-        }
+    /* Loading overlay */
+    .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 12px;
+    }
 
-        .badge {
-            font-weight: 500;
-            padding: 0.5em 0.8em;
-        }
-
-        /* Chart container responsive fixes */
-        .chart-wrapper {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
-
-        /* Loading overlay */
-        .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            border-radius: 12px;
-        }
-
-        [data-theme="dark"] .loading-overlay {
-            background: rgba(30, 41, 59, 0.9);
-        }
+    [data-theme="dark"] .loading-overlay {
+    background: rgba(30, 41, 59, 0.9);
+    }
     </style>
 </head>
 
@@ -912,29 +899,7 @@
                             <h6>Secure & Private</h6>
                             <small class="text-muted">Your data is safe</small>
                         </div>
-                    </div>
-                </div>
-            </div>
-            </main>
-
-            <!-- Footer -->
-            <footer class="footer text-center">
-                <div class="container">
-                    <p class="mb-2">&copy; 2025 FinBuddy AI. All rights reserved.</p>
-                    <p class="small text-muted mb-0">
-                        Powered by <a href="#" class="text-decoration-none">GenAI</a> & <a href="#"
-                            class="text-decoration-none">FastAPI</a>
-                    </p>
-                </div>
-            </footer>
-
-            <!-- Scripts -->
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-            <script src="/assets/js/dashboard.js"></script>
-            <script src="/assets/js/ml_features.js"></script>
-            <script src="/assets/js/health_score.js"></script>
-            <script src="/assets/js/predictions.js"></script>
-            <script src="/assets/js/business_wealth.js"></script>
+                        <script src="/assets/js/business_wealth.js"></script>
 
 </body>
 
