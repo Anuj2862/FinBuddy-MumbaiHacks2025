@@ -3,8 +3,38 @@
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
 from bson import ObjectId
+
+from backend.core.database import get_transactions_collection
+from backend.models.transaction import Transaction, TransactionType
+from backend.services.compliance_service import ComplianceService
+from backend.utils.logger import logger
+
+IST = timezone(timedelta(hours=5, minutes=30))
+
+def mongo_to_transaction(doc) -> Transaction:
+    return Transaction.from_mongo(doc)
+
+class TransactionService:
+    def __init__(self):
+        self.collection = get_transactions_collection()
+        self.compliance_service = ComplianceService()
+
+    async def get_all_transactions(self) -> List[Transaction]:
         docs = await self.collection.find({}).sort("date", -1).to_list(None)
         return [mongo_to_transaction(doc) for doc in docs]
+
+    async def create_transaction(self, txn_data: Dict[str, Any]) -> Transaction:
+        # Compliance check
+        ai_update = await self.compliance_service.analyze_transaction(txn_data)
+        txn_data["ai_insight"] = ai_update.get("insight", "")
+        txn_data["compliance_alert"] = ai_update.get("compliance_alert", "")
+        
+        # Insert
+        result = await self.collection.insert_one(txn_data)
+        
+        # Return with ID
+        new_doc = await self.collection.find_one({"_id": result.inserted_id})
+        return mongo_to_transaction(new_doc)
 
     # ---------------------------------------------------------
     # GET BY ID

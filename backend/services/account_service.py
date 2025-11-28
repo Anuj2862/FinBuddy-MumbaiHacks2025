@@ -1,5 +1,5 @@
 from typing import List, Dict, Any, Optional
-from backend.core.database import get_database
+from backend.core.database import mongo
 from datetime import datetime
 
 class AccountService:
@@ -8,7 +8,7 @@ class AccountService:
 
     async def _get_collection(self):
         if self.db is None:
-            self.db = await get_database()
+            self.db = mongo.get_db()
         return self.db.accounts
 
     async def initialize_defaults(self):

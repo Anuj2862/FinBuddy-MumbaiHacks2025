@@ -159,7 +159,7 @@ async def get_chart_insights(req: ChartRequest):
 # ---------------------------------------------------------
 from backend.services.health_score_service import HealthScoreService
 
-health_service = HealthScoreService()
+# health_service = HealthScoreService()  <-- Removed to avoid DB init on import
 
 
 @router.get("/health-score")
@@ -178,6 +178,8 @@ async def get_financial_health_score():
     try:
         logger.info("💚 Calculating financial health score...")
         
+        # Instantiate here to ensure DB is connected
+        health_service = HealthScoreService()
         result = await health_service.get_financial_health_score(days=60)
         
         return {
