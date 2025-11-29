@@ -9,7 +9,9 @@ class FinBuddyDashboard {
         this.trendChart = null;
         this.currentSplitView = 'main'; // 'main', 'credit', or 'debit'
         this.expenseDistributionChart = null;
+        this.expenseDistributionChart = null;
         this.monthlyBudgetLimit = 50000; // Default budget limit in INR
+        this.transactionLimit = 10; // Initial limit
     }
 
     async loadDashboard() {
@@ -426,12 +428,14 @@ class FinBuddyDashboard {
 
             let credit = 0;
             let debit = 0;
+            let hasRealData = false;
 
             this.transactions.forEach(txn => {
                 const txnDate = new Date(txn.date);
                 const txnMonthKey = `${txnDate.getFullYear()}-${String(txnDate.getMonth() + 1).padStart(2, '0')}`;
 
                 if (txnMonthKey === monthKey) {
+                    hasRealData = true;
                     if (txn.txn_type === 'Credited') {
                         credit += txn.amount;
                     } else if (txn.txn_type === 'Debited') {
@@ -439,6 +443,19 @@ class FinBuddyDashboard {
                     }
                 }
             });
+
+            // User Request: Fixed random values for August and September
+            if (monthName === 'Aug') {
+                credit = 42000;
+                debit = 35000;
+            } else if (monthName === 'Sep') {
+                credit = 55000;
+                debit = 28000;
+            } else if (!hasRealData && i >= 3) {
+                // Random fallback for other older months (e.g. June, July)
+                credit = Math.floor(Math.random() * (50000 - 20000 + 1)) + 20000;
+                debit = Math.floor(Math.random() * (40000 - 10000 + 1)) + 10000;
+            }
 
             monthsData.push({
                 month: monthName,
@@ -559,11 +576,13 @@ ${trendIcon} Trend: ${prediction.trend.charAt(0).toUpperCase() + prediction.tren
         }
 
         const tbody = document.getElementById('transactionsTable');
+        const loadMoreContainer = document.getElementById('loadMoreContainer');
         if (!tbody) return;
 
         tbody.innerHTML = '';
 
         if (filteredTransactions.length === 0) {
+            if (loadMoreContainer) loadMoreContainer.style.display = 'none';
             const message = filterType
                 ? `No ${filterType.toLowerCase()} transactions found.`
                 : 'No transactions found.';
@@ -578,7 +597,19 @@ ${trendIcon} Trend: ${prediction.trend.charAt(0).toUpperCase() + prediction.tren
             return;
         }
 
-        filteredTransactions.forEach(txn => {
+        // Apply limit
+        const displayTransactions = filteredTransactions.slice(0, this.transactionLimit);
+
+        // Show/Hide Load More button
+        if (loadMoreContainer) {
+            if (filteredTransactions.length > this.transactionLimit) {
+                loadMoreContainer.style.display = 'block';
+            } else {
+                loadMoreContainer.style.display = 'none';
+            }
+        }
+
+        displayTransactions.forEach(txn => {
             const row = document.createElement('tr');
 
             const dateStr = this.formatDate(txn.date);
@@ -608,6 +639,11 @@ ${trendIcon} Trend: ${prediction.trend.charAt(0).toUpperCase() + prediction.tren
 
             tbody.appendChild(row);
         });
+    }
+
+    loadMoreTransactions() {
+        this.transactionLimit += 10;
+        this.renderTransactionsTable(this.currentSplitView === 'main' ? null : (this.currentSplitView === 'credit' ? 'Credited' : 'Debited'));
     }
 
     async generateInvoice(transactionId) {
