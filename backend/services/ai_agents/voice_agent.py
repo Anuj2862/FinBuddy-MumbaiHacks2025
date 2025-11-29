@@ -1,32 +1,30 @@
-# backend/services/ai_agents/voice_agent.py
-
 import base64
 import tempfile
 import os
-from openai import AsyncOpenAI
+from groq import AsyncGroq
 from backend.utils.logger import logger
 from backend.core.config import settings
 
 
 class VoiceAgent:
     """
-    Whisper-powered Speech-to-Text (V3 Ready)
-    Falls back ONLY if Whisper genuinely fails.
+    Groq-powered Speech-to-Text (Whisper Large V3)
+    Falls back ONLY if Groq genuinely fails.
     """
 
     def __init__(self):
-        self.openai_key = settings.OPENAI_API_KEY
+        self.groq_key = settings.GROQ_API_KEY
         self.client = None
 
-        if self.openai_key:
+        if self.groq_key:
             try:
-                self.client = AsyncOpenAI(api_key=self.openai_key)
-                logger.info("🔑 OpenAI API key loaded — Whisper STT active")
+                self.client = AsyncGroq(api_key=self.groq_key)
+                logger.info("⚡ Groq API key loaded — Whisper Large V3 active")
             except Exception as e:
-                logger.error(f"❌ Failed to init OpenAI client: {e}")
+                logger.error(f"❌ Failed to init Groq client: {e}")
                 self.client = None
         else:
-            logger.warning("⚠️ No OPENAI_API_KEY found — using fallback STT")
+            logger.warning("⚠️ No GROQ_API_KEY found — using fallback STT")
 
     # ====================================================================
     # MAIN SPEECH-TO-TEXT FUNCTION
@@ -54,16 +52,16 @@ class VoiceAgent:
             logger.info(f"🎧 Temp audio saved: {audio_path}")
 
             # --------------------------------------------------------------
-            # 3. Whisper STT (REAL MODEL)
+            # 3. Groq Whisper STT (REAL MODEL)
             # --------------------------------------------------------------
             if self.client:
                 try:
-                    logger.info("🎙️ Sending audio to Whisper…")
+                    logger.info("🎙️ Sending audio to Groq Whisper Large V3…")
 
                     with open(audio_path, "rb") as f:
                         result = await self.client.audio.transcriptions.create(
-                            file=f,
-                            model="whisper-1",
+                            file=(audio_path, f.read()),
+                            model="whisper-large-v3",
                             response_format="json"
                         )
 
@@ -76,7 +74,7 @@ class VoiceAgent:
                     logger.warning("⚠️ Whisper returned empty text — using fallback")
 
                 except Exception as e:
-                    logger.error(f"❌ Whisper STT error: {e}")
+                    logger.error(f"❌ Groq Whisper STT error: {e}")
                     # Proceed to fallback
 
             # --------------------------------------------------------------

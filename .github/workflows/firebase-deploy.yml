@@ -8,13 +8,41 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to Firebase
+      # Authenticate with Google Cloud
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_FINBUDDY_MUMBAIHACKS }}'
+
+      # Deploy Backend to Cloud Run
+      - name: 'Deploy to Cloud Run'
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          service: 'finbuddy-backend'
+          region: 'us-central1'
+          source: '.'
+          env_vars: |
+            GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
+            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            MONGO_URI=${{ secrets.MONGO_URI }}
+            SMTP_SERVER=${{ secrets.SMTP_SERVER }}
+            SMTP_PORT=${{ secrets.SMTP_PORT }}
+            SENDER_EMAIL=${{ secrets.SENDER_EMAIL }}
+            SENDER_PASSWORD=${{ secrets.SENDER_PASSWORD }}
+            APP_ENV=production
+
+      # Deploy Frontend to Firebase Hosting
+      - name: Deploy to Firebase Hosting
         uses: firebase/firebase-action@master
         with:
-          args: deploy
+          args: deploy --only hosting
         env:
           FIREBASE_SERVICE_ACCOUNT_FINBUDDY_MUMBAIHACKS: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FINBUDDY_MUMBAIHACKS }}
           PROJECT_ID: finbuddy-mumbaihacks
