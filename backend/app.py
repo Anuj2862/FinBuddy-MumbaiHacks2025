@@ -1,5 +1,10 @@
 import logging
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -36,6 +41,11 @@ app.include_router(invoices.router)
 app.include_router(accounts.router)
 app.include_router(privacy.router)
 app.include_router(holistic.router)
+
+# Import and include auth router
+from backend.routers import auth
+app.include_router(auth.router)
+
 
 # ---------------------------------------------------------
 # CORS Configuration (Allow all for development)
