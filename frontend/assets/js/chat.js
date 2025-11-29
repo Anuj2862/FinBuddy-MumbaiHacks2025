@@ -24,7 +24,7 @@ class FinBuddyChat {
     // ----------------------------------------------------------
     // SEND TEXT MESSAGE TO BACKEND CHAT INTENT ENGINE
     // ----------------------------------------------------------
-    async sendMessage(isVoice = false) {
+    async sendMessage(isVoice = false, parsedData = null) {
         const msg = this.messageInput.value.trim();
         if (!msg || this.isProcessing) return;
 
@@ -42,7 +42,8 @@ class FinBuddyChat {
                 body: JSON.stringify({
                     message: msg,
                     user_id: this.userId,
-                    is_voice: isVoice
+                    is_voice: isVoice,
+                    parsed_data: parsedData
                 })
             });
 
@@ -131,9 +132,9 @@ class FinBuddyChat {
     // ----------------------------------------------------------
     // VOICE → CHAT BRIDGE (HYBRID MODE H2)
     // ----------------------------------------------------------
-    async processVoiceText(text) {
+    async processVoiceText(text, parsedData = null) {
         this.messageInput.value = text;
-        await this.sendMessage(true);
+        await this.sendMessage(true, parsedData);
     }
 }
 

@@ -26,6 +26,7 @@ class ChatRequest(BaseModel):
     message: str = Field(..., description="User message text")
     user_id: str = Field(..., description="Unique user identifier")
     is_voice: bool = Field(False, description="Whether the message originated from STT")
+    parsed_data: Optional[dict] = Field(None, description="Pre-parsed data from Voice Agent")
 
     model_config = {"from_attributes": True}
 
@@ -46,7 +47,8 @@ async def chat_with_ai(request: ChatRequest):
         response = await chat_manager.process_message(
             user_id=request.user_id,
             message=request.message,
-            is_voice=request.is_voice
+            is_voice=request.is_voice,
+            parsed_data=request.parsed_data
         )
 
         return {

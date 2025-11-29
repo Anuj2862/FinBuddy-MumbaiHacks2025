@@ -1,96 +1,69 @@
-// frontend/assets/js/voice.js — HYBRID H2 MODE (FINAL)
+// frontend/assets/js/voice.js — WEB SPEECH API MODE (FAST LANE)
 
 class VoiceRecorder {
     constructor() {
         this.isRecording = false;
-        this.mediaRecorder = null;
-        this.audioChunks = [];
-        this.stream = null;
+        this.recognition = null;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            this.recognition = new SpeechRecognition();
+            this.recognition.continuous = false;
+            this.recognition.interimResults = false;
+            this.recognition.lang = 'en-US'; // Default to English
+
+            this.recognition.onstart = () => {
+                this.isRecording = true;
+                this.updateButton(true);
+                window.chat.addMessage("🎤 Listening...", "bot");
+            };
+
+            this.recognition.onend = () => {
+                this.isRecording = false;
+                this.updateButton(false);
+            };
+
+            this.recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                console.log("🎤 Heard:", transcript);
+                this.processText(transcript);
+            };
+
+            this.recognition.onerror = (event) => {
+                console.error("Voice Error:", event.error);
+                this.isRecording = false;
+                this.updateButton(false);
+                this.showVoiceError(`Error: ${event.error}`);
+            };
+        } else {
+            console.warn("Web Speech API not supported.");
+            this.showVoiceError("Browser does not support voice.");
+        }
     }
 
     async toggleRecording() {
-        if (!this.isRecording) await this.startRecording();
-        else await this.stopRecording();
-    }
+        if (!this.recognition) return;
 
-    // ----------------------------------------------------------
-    // START RECORDING
-    // ----------------------------------------------------------
-    async startRecording() {
-        try {
-            if (!navigator.mediaDevices) {
-                throw new Error("Browser does not support voice recording.");
-            }
-
-            this.stream = await navigator.mediaDevices.getUserMedia({
-                audio: { echoCancellation: true, noiseSuppression: true }
-            });
-
-            const mimeType =
-                MediaRecorder.isTypeSupported("audio/webm")
-                    ? "audio/webm"
-                    : "";
-
-            this.mediaRecorder = new MediaRecorder(this.stream, { mimeType });
-
-            this.audioChunks = [];
-            this.mediaRecorder.ondataavailable = e => {
-                if (e.data.size > 0) this.audioChunks.push(e.data);
-            };
-
-            this.mediaRecorder.onstop = () => this.processRecording();
-
-            this.mediaRecorder.start();
-            this.isRecording = true;
-
-            this.updateButton(true);
-
-            setTimeout(() => {
-                if (this.isRecording) this.stopRecording();
-            }, 7000);
-        } catch (err) {
-            console.error(err);
-            this.showVoiceError("Microphone access denied.");
+        if (!this.isRecording) {
+            this.recognition.start();
+        } else {
+            this.recognition.stop();
         }
     }
 
     // ----------------------------------------------------------
-    // STOP RECORDING
+    // PROCESS TEXT (SEND TO BACKEND FOR PARSING)
     // ----------------------------------------------------------
-    async stopRecording() {
-        if (!this.mediaRecorder || !this.isRecording) return;
-
+    async processText(text) {
         try {
-            this.mediaRecorder.stop();
-        } catch (err) { }
-
-        this.isRecording = false;
-        this.updateButton(false);
-
-        if (this.stream) {
-            this.stream.getTracks().forEach(t => t.stop());
-        }
-    }
-
-    // ----------------------------------------------------------
-    // SEND AUDIO TO BACKEND FOR STT → NLP → CHAT PIPELINE
-    // ----------------------------------------------------------
-    async processRecording() {
-        try {
-            window.chat.addMessage("🎤 Processing voice…", "user");
+            window.chat.addMessage(`🎤 You said: "${text}"`, "user");
             window.chat.showTyping();
 
-            const blob = new Blob(this.audioChunks, {
-                type: this.mediaRecorder.mimeType || "audio/webm"
-            });
-
-            const base64 = await this.blobToBase64(blob);
-
-            const res = await fetch("/api/voice/process", {
+            const res = await fetch("/api/voice/process_text", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    audio_base64: base64,
+                    text: text,
                     user_id: window.chat.userId
                 })
             });
@@ -99,22 +72,20 @@ class VoiceRecorder {
 
             window.chat.hideTyping();
 
-            if (data.success && data.text) {
-                await window.chat.processVoiceText(data.text);
+            if (data.success) {
+                // Pass text AND parsed data to Chat Manager
+                await window.chat.processVoiceText(data.text, data.parsed_data);
 
-                // Show Voice Semantics
-                if (data.voice_semantics && data.voice_semantics.tags.length > 0) {
-                    const tags = data.voice_semantics.tags.join(", ");
-                    const sentiment = data.voice_semantics.sentiment;
-
+                // Show AI Insight if available
+                if (data.ai_insight) {
                     window.chat.addMessage(
-                        `🧠 <strong>Voice Analysis:</strong> Detected ${tags} (${sentiment} tone)`,
+                        `💡 <strong>AI Insight:</strong> ${data.ai_insight}`,
                         "bot"
                     );
                 }
             } else {
                 window.chat.addMessage(
-                    "Voice could not be recognized. Try again.",
+                    "Could not process command. Try again.",
                     "bot",
                     "error"
                 );
@@ -123,19 +94,11 @@ class VoiceRecorder {
             console.error(err);
             window.chat.hideTyping();
             window.chat.addMessage(
-                "Voice processing error. Please type instead.",
+                "Processing error. Please type instead.",
                 "bot",
                 "error"
             );
         }
-    }
-
-    blobToBase64(blob) {
-        return new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(",")[1]);
-            reader.readAsDataURL(blob);
-        });
     }
 
     // ----------------------------------------------------------

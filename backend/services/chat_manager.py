@@ -73,7 +73,7 @@ class ChatManager:
     # ========================================================================================
     # CENTRAL CHAT HANDLER
     # ========================================================================================
-    async def process_message(self, user_id: str, message: str, is_voice: bool = False) -> dict:
+    async def process_message(self, user_id: str, message: str, is_voice: bool = False, parsed_data: dict = None) -> dict:
         try:
             if not message:
                 return self._error_response("Empty message received")
@@ -88,7 +88,22 @@ class ChatManager:
 
             # 2. Intent Detection
             intent, confidence = self.intent_classifier.predict(msg)
-            logger.info(f"🎯 Predicted Intent: {intent} (Confidence: {confidence:.2f})")
+            
+            # ------------------------------------------------------------------
+            # 🎤 VOICE AGENT OVERRIDE
+            # If we have pre-parsed data from Whisper/Orchestrator, USE IT!
+            # ------------------------------------------------------------------
+            entities = {}
+            if parsed_data and parsed_data.get("amount", 0) > 0:
+                logger.info(f"🎤 Voice Agent Override: Using parsed data {parsed_data}")
+                intent = "add_transaction"
+                entities = {
+                    "AMOUNT": parsed_data.get("amount"),
+                    "ORG": parsed_data.get("counterparty", "Unknown"),
+                    "CATEGORY": parsed_data.get("category")  # Pass category to be used later
+                }
+            else:
+                logger.info(f"🎯 Predicted Intent: {intent} (Confidence: {confidence:.2f})")
             
             # Handle new intents manually if classifier isn't retrained yet
             # Simple keyword override for demo purposes
@@ -102,7 +117,8 @@ class ChatManager:
                 intent = "predict_budget"
 
             # 3. Entity Extraction
-            entities = self.ner_extractor.extract_entities(msg)
+            if not entities:
+                entities = self.ner_extractor.extract_entities(msg)
             logger.info(f"🔍 Extracted Entities: {entities}")
 
             # 4. Generate Response based on Intent (with Context)
@@ -191,7 +207,10 @@ class ChatManager:
                     return self._response("I couldn't find a valid amount. Please try again (e.g., 'Spent 500 on food').", "error", intent)
 
             # 1. Smart Categorization
-            category = self.categorizer.predict(user_message)
+            # Use pre-parsed category if available (from Voice Agent), else predict
+            category = entities.get("CATEGORY")
+            if not category or category == "Miscellaneous":
+                category = self.categorizer.predict(user_message)
             
             # 2. Anomaly Detection
             anomaly_result = self.anomaly_detector.check(amount, category, "Unknown Merchant")

@@ -1,37 +1,33 @@
-# backend/services/ai_agents/voice_agent.py
-
 import base64
 import tempfile
 import os
+from groq import AsyncGroq
+import logging
+import tempfile
+import base64
 from openai import AsyncOpenAI
-from backend.utils.logger import logger
-from backend.core.config import settings
 
+logger = logging.getLogger("FinBuddy")
 
 class VoiceAgent:
-    """
-    Whisper-powered Speech-to-Text (V3 Ready)
-    Falls back ONLY if Whisper genuinely fails.
-    """
-
     def __init__(self):
-        self.openai_key = settings.OPENAI_API_KEY
+        self.openai_key = os.getenv("OPENAI_API_KEY")
         self.client = None
 
         if self.openai_key:
             try:
                 self.client = AsyncOpenAI(api_key=self.openai_key)
-                logger.info("🔑 OpenAI API key loaded — Whisper STT active")
+                logger.info("⚡ OpenAI API key loaded — Whisper active")
             except Exception as e:
                 logger.error(f"❌ Failed to init OpenAI client: {e}")
                 self.client = None
         else:
-            logger.warning("⚠️ No OPENAI_API_KEY found — using fallback STT")
+            logger.warning("⚠️ No OPENAI_API_KEY found — Voice will fail")
 
     # ====================================================================
     # MAIN SPEECH-TO-TEXT FUNCTION
     # ====================================================================
-    async def speech_to_text(self, audio_data_base64: str) -> str:
+    async def speech_to_text(self, audio_data_base64: str, mime_type: str = "audio/webm") -> str:
         audio_path = None
 
         try:
@@ -45,39 +41,47 @@ class VoiceAgent:
                 return "Voice input unavailable"
 
             # --------------------------------------------------------------
-            # 2. Write temp WAV file
+            # 2. Write temp file (Browser usually sends WebM)
             # --------------------------------------------------------------
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp:
+            # Determine extension
+            ext = ".webm"
+            if "mp4" in mime_type:
+                ext = ".mp4"
+            elif "ogg" in mime_type:
+                ext = ".ogg"
+            elif "wav" in mime_type:
+                ext = ".wav"
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as temp:
                 temp.write(audio_bytes)
                 audio_path = temp.name
-
-            logger.info(f"🎧 Temp audio saved: {audio_path}")
+            
+            file_size = len(audio_bytes)
+            logger.info(f"🎧 Temp audio saved: {audio_path} (Size: {file_size} bytes)")
+            
+            if file_size < 1000:
+                logger.warning("⚠️ Audio file is very small! Microphone might be muted or blocked.")
 
             # --------------------------------------------------------------
-            # 3. Whisper STT (REAL MODEL)
+            # 3. OpenAI Whisper STT
             # --------------------------------------------------------------
             if self.client:
+                logger.info("🎙️ Sending audio to OpenAI Whisper...")
                 try:
-                    logger.info("🎙️ Sending audio to Whisper…")
-
                     with open(audio_path, "rb") as f:
                         result = await self.client.audio.transcriptions.create(
                             file=f,
                             model="whisper-1",
                             response_format="json"
                         )
-
+                    
                     text = result.text.strip() if hasattr(result, "text") else ""
-
-                    if text:
-                        logger.info(f"🗣 Whisper → {text}")
-                        return text
-
-                    logger.warning("⚠️ Whisper returned empty text — using fallback")
+                    logger.info(f"🗣 Whisper → {text}")
+                    return text
 
                 except Exception as e:
-                    logger.error(f"❌ Whisper STT error: {e}")
-                    # Proceed to fallback
+                    logger.error(f"❌ OpenAI Whisper failed: {e}")
+                    return "Voice recognition failed"
 
             # --------------------------------------------------------------
             # 4. FALLBACK STT
@@ -86,6 +90,9 @@ class VoiceAgent:
             return self._fallback_stt()
 
         except Exception as e:
+            print(f"DEBUG: Voice Pipeline Error: {e}")
+            import traceback
+            traceback.print_exc()
             logger.error(f"❌ Voice STT pipeline crashed: {e}")
             return "Voice input unavailable"
 

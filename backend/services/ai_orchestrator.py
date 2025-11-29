@@ -106,14 +106,14 @@ class AIOrchestrator:
     # =====================================================================================
     # 🎤 2. PROCESS VOICE (STT → NLP → Categorization)
     # =====================================================================================
-    async def process_voice(self, audio_base64: str):
+    async def process_voice(self, audio_base64: str, mime_type: str = "audio/webm"):
         try:
             logger.info("🎤 Starting voice processing pipeline...")
 
             # ------------------------------------
             # 1) Speech to Text
             # ------------------------------------
-            text = await self.voice_agent.speech_to_text(audio_base64)
+            text = await self.voice_agent.speech_to_text(audio_base64, mime_type)
             text = text.strip()
 
             if not text or "unavailable" in text.lower():

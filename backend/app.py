@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse
 import uvicorn
 
 # Import Routers
-from backend.routers import transactions, ai_insights, chat, invoices, accounts, privacy, holistic
+from backend.routers import transactions, ai_insights, chat, invoices, accounts, privacy, holistic, voice
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -41,6 +41,7 @@ app.include_router(invoices.router)
 app.include_router(accounts.router)
 app.include_router(privacy.router)
 app.include_router(holistic.router)
+app.include_router(voice.router)
 
 # Import and include auth router
 from backend.routers import auth
