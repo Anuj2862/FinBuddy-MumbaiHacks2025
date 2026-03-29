@@ -25,6 +25,12 @@ class VoiceManager {
             this.recognition.interimResults = false;
             this.recognition.lang = 'en-IN'; // Default to Indian English
 
+            this.recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                console.log("Voice Input:", transcript);
+                this.handleVoiceCommand(transcript);
+            };
+
             this.recognition.onstart = () => {
                 this.isRecording = true;
                 this.updateUI(true);
@@ -35,12 +41,6 @@ class VoiceManager {
                 this.isRecording = false;
                 this.updateUI(false);
                 this.stopVisualizer();
-            };
-
-            this.recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                console.log("Voice Input:", transcript);
-                this.handleVoiceCommand(transcript);
             };
 
             this.recognition.onerror = (event) => {

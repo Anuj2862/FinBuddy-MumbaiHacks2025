@@ -41,13 +41,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const apiUrl = "/api/transactions/from-sms";
-            console.log("📡 Sending POST:", apiUrl);
+            const token = localStorage.getItem('token');
+            
+            console.log("🔑 Token size check:", token ? token.length : 0);
+            if (!token) {
+                console.warn("⚠️ No token found. Redirecting to login...");
+                window.location.href = '/';
+                return;
+            }
 
+            console.log("📡 Sending POST:", apiUrl);
             const response = await fetch(apiUrl, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Accept": "application/json"
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({ text })
             });
@@ -79,11 +88,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
             }
 
-            console.log("✅ Parsed Transaction:", data);
-            displayResult(data);
-
-            // Redirect after success
-            setTimeout(() => (window.location.href = "/dashboard"), 2000);
+            console.log("✅ Parsed Transactions:", data);
+            
+            if (data.transactions && data.transactions.length > 0) {
+                displayBulkResult(data);
+                setTimeout(() => (window.location.href = "/dashboard"), 3000);
+            } else if (data.id) { // Fallback for single legacy response
+                displayResult(data);
+                setTimeout(() => (window.location.href = "/dashboard"), 2000);
+            } else {
+                throw new Error("No successful transactions parsed.");
+            }
 
         } catch (err) {
             console.error("❌ FETCH ERROR:", err);
@@ -129,6 +144,51 @@ document.addEventListener('DOMContentLoaded', () => {
     // ----------------------------------------------
     // DISPLAY RESULT CARD
     // ----------------------------------------------
+
+    function displayBulkResult(data) {
+        resultDiv.classList.remove("d-none");
+        resultDiv.classList.add("animate-slide-up", "pulse-soft");
+
+        let html = `
+            <h5 class="text-primary mb-3">
+                <i class="fas fa-check-circle me-2"></i>Successfully Parsed ${data.total_parsed} Transaction(s)
+            </h5>
+            ${data.total_failed > 0 ? `<div class="alert alert-warning mb-3">Failed to parse ${data.total_failed} lines.</div>` : ''}
+            
+            <div class="transaction-list" style="max-height: 400px; overflow-y: auto;">
+        `;
+
+        data.transactions.forEach(txn => {
+            const txnTypeClass = txn.txn_type === "Credited" ? "bg-success" : "bg-danger";
+            const txnTypeIcon = txn.txn_type === "Credited" ? "fa-arrow-up" : "fa-arrow-down";
+            
+            html += `
+                <div class="border rounded p-3 mb-3 bg-light-subtle">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>ID:</strong> <code>${txn.id ? txn.id.substring(0, 8) + "..." : "N/A"}</code></p>
+                            <p class="mb-1"><strong>Type:</strong> <span class="badge ${txnTypeClass}"><i class="fas ${txnTypeIcon} me-1"></i>${txn.txn_type}</span></p>
+                            <p class="mb-1"><strong>Amount:</strong> <span class="fw-bold ${txnTypeClass === "bg-success" ? "text-success" : "text-danger"}">₹${Number(txn.amount).toLocaleString("en-IN")}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Category:</strong> <span class="badge bg-secondary">${txn.category || "N/A"}</span></p>
+                            <p class="mb-1"><strong>Counterparty:</strong> ${txn.counterparty || "Unknown"}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `
+            </div>
+            <div class="alert alert-info mt-3 mb-0">
+                <i class="fas fa-circle-notch fa-spin me-2"></i>
+                Saving and redirecting to Dashboard...
+            </div>
+        `;
+        
+        resultDiv.innerHTML = html;
+    }
 
     function displayResult(data) {
         resultDiv.classList.remove("d-none");

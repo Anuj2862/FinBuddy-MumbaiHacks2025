@@ -13,7 +13,12 @@ class AccountsManager {
         if (!this.container) return;
 
         try {
-            const response = await fetch(this.apiBase);
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/accounts', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             if (!response.ok) throw new Error('Failed to fetch accounts');
 
             const accounts = await response.json();

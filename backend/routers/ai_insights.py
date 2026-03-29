@@ -1,19 +1,21 @@
 # backend/routers/ai_insights.py
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
 
 from backend.services.ai_orchestrator import AIOrchestrator
 from backend.parsers.pdf_statement_parser import parse_pdf_statement
 from backend.parsers.bank_email_parser import parse_email_text
-from backend.parsers.bank_email_parser import parse_email_text
 from backend.utils.logger import logger
 from backend.ml.chart_explainer import ChartExplainer
+from backend.routers.auth import get_current_user
 
-router = APIRouter(prefix="/api/ai", tags=["AI Processing"])
-
-router = APIRouter(prefix="/api/ai", tags=["AI Processing"])
+router = APIRouter(
+    prefix="/api/ai", 
+    tags=["AI Processing"],
+    dependencies=[Depends(get_current_user)]
+)
 
 orchestrator = AIOrchestrator()
 chart_explainer = ChartExplainer()
@@ -163,24 +165,17 @@ from backend.services.health_score_service import HealthScoreService
 
 
 @router.get("/health-score")
-async def get_financial_health_score():
+async def get_financial_health_score(current_user: dict = Depends(get_current_user)):
     """
-    Calculate comprehensive 0-100 Financial Wellness Index.
-    
-    Returns:
-        - overall_score: 0-100 score
-        - grade: Letter grade (A+, A, B, C, D, F)
-        - trend: Improving/Stable/Declining
-        - breakdown: Scores for each of 6 metrics
-        - recommendations: Top 3 personalized improvement suggestions
-        - assessment: Text description
+    Calculate comprehensive 0-100 Financial Wellness Index for current user.
     """
     try:
         logger.info("💚 Calculating financial health score...")
         
         # Instantiate here to ensure DB is connected
         health_service = HealthScoreService()
-        result = await health_service.get_financial_health_score(days=60)
+        user_id = current_user.get("username") or current_user.get("email")
+        result = await health_service.get_financial_health_score(user_id, days=60)
         
         return {
             "success": True,

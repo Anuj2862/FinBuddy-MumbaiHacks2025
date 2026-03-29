@@ -1,13 +1,18 @@
 # backend/routers/chat.py
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
 
 from backend.services.chat_manager import ChatManager
 from backend.utils.logger import logger
+from backend.routers.auth import get_current_user
 
-router = APIRouter(prefix="/api/ai", tags=["AI Chat"])
+router = APIRouter(
+    prefix="/api/ai", 
+    tags=["AI Chat"],
+    dependencies=[Depends(get_current_user)]
+)
 
 # Lazy initialization - create ChatManager only when needed
 _chat_manager_instance = None
@@ -35,17 +40,19 @@ class ChatRequest(BaseModel):
 # Chat Endpoint
 # ---------------------------------------------------------
 @router.post("/chat")
-async def chat_with_ai(request: ChatRequest):
+async def chat_with_ai(request: ChatRequest, current_user: dict = Depends(get_current_user)):
     try:
+        user_id = current_user.get("username") or current_user.get("email")
+        
         if not request.message.strip():
             raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-        logger.info(f"💬 Chat request from {request.user_id} | Voice: {request.is_voice}")
+        logger.info(f"💬 Chat request from {user_id} (authenticated) | Voice: {request.is_voice}")
         logger.info(f"Message: {request.message}")
 
         chat_manager = get_chat_manager()
         response = await chat_manager.process_message(
-            user_id=request.user_id,
+            user_id=user_id, # FIX: Use authenticated user_id
             message=request.message,
             is_voice=request.is_voice,
             parsed_data=request.parsed_data

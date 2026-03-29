@@ -31,11 +31,16 @@ class ComplianceService:
             return datetime.utcnow()
 
     # --------------------------------------------------------
-    # YTD INCOME (from MongoDB)
+    # YTD INCOME (from MongoDB) - USER ISOLATED
     # --------------------------------------------------------
-    async def get_ytd_income(self, year: int) -> float:
-        """Calculate Year-To-Date credited income directly from MongoDB."""
+    async def get_ytd_income(self, user_id: str, year: int) -> float:
+        """Calculate Year-To-Date credited income directly from MongoDB for a specific user."""
+        if not user_id:
+            logger.error("get_ytd_income called without user_id")
+            return 0.0
+            
         cursor = self.collection.find({
+            "user_id": user_id,
             "txn_type": TransactionType.CREDITED.value,
             "date": {
                 "$gte": datetime(year, 1, 1),
@@ -50,12 +55,12 @@ class ComplianceService:
     # --------------------------------------------------------
     # GST COMPLIANCE CHECK
     # --------------------------------------------------------
-    async def check_gst_compliance(self, year: int) -> Optional[str]:
-        """Check if the user's credited income crosses GST threshold."""
-        ytd_income = await self.get_ytd_income(year)
+    async def check_gst_compliance(self, user_id: str, year: int) -> Optional[str]:
+        """Check if the specific user's credited income crosses GST threshold."""
+        ytd_income = await self.get_ytd_income(user_id, year)
         threshold = self.gst_threshold
 
-        logger.info(f"Checking GST compliance YTD={ytd_income:,} | Threshold={threshold:,}")
+        logger.info(f"Checking GST compliance for {user_id}: YTD={ytd_income:,} | Threshold={threshold:,}")
 
         if ytd_income >= threshold:
             return (
@@ -106,8 +111,9 @@ class ComplianceService:
             # ------------------------------------------------
             tx_date = self._ensure_datetime(tx.get("date"))
             year = tx_date.year
+            user_id = tx.get("user_id")
 
-            gst_msg = await self.check_gst_compliance(year)
+            gst_msg = await self.check_gst_compliance(user_id, year)
             if gst_msg:
                 alerts.append(gst_msg)
 

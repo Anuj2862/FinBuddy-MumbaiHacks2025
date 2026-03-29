@@ -7,11 +7,14 @@ class VectorMemory:
     def __init__(self, model_name='all-MiniLM-L6-v2'):
         # We can potentially share the model instance if passed, but for now load separately
         self.embedder = SentenceTransformer(model_name)
-        self.memory = [] # List of dicts: {'text': str, 'embedding': tensor, 'metadata': dict}
-        self.limit = 50 # Keep last 50 interactions for now
+        self.memory = {} # Dict of lists: {user_id: [{'text': str, 'embedding': tensor, 'metadata': dict}]}
+        self.limit = 50 # Keep last 50 interactions per user for now
         
-    def add_interaction(self, user_text, bot_response, intent, entities):
-        """Store the interaction in memory"""
+    def add_interaction(self, user_id, user_text, bot_response, intent, entities):
+        """Store the interaction in memory (user-isolated)"""
+        if user_id not in self.memory:
+            self.memory[user_id] = []
+            
         text = f"User: {user_text} | Bot: {bot_response}"
         embedding = self.embedder.encode(text, convert_to_tensor=True)
         
@@ -27,33 +30,34 @@ class VectorMemory:
             }
         }
         
-        self.memory.append(entry)
+        self.memory[user_id].append(entry)
         
         # Prune if too large
-        if len(self.memory) > self.limit:
-            self.memory.pop(0)
+        if len(self.memory[user_id]) > self.limit:
+            self.memory[user_id].pop(0)
             
-    def get_context(self, current_query, top_k=3):
-        """Retrieve relevant past interactions"""
-        if not self.memory:
-            return []
+    def get_context(self, user_id: str, query: str, top_k: int = 3) -> str:
+        """Find most similar past interactions for this user."""
+        if user_id not in self.memory or not self.memory[user_id]:
+            return ""
             
-        query_embedding = self.embedder.encode(current_query, convert_to_tensor=True)
+        user_mem = self.memory[user_id]
+        query_vec = self.embedder.encode(query, convert_to_tensor=True)
         
-        # Stack memory embeddings
-        memory_embeddings = torch.stack([m['embedding'] for m in self.memory])
-        
-        # Compute cosine similarity
-        cos_scores = util.cos_sim(query_embedding, memory_embeddings)[0]
+        # Simple cosine similarity search
+        mem_embeddings = torch.stack([m['embedding'] for m in user_mem])
+        cos_scores = util.cos_sim(query_vec, mem_embeddings)[0]
         
         # Get top_k results
-        # If we have fewer than top_k memories, take all
-        k = min(top_k, len(self.memory))
+        k = min(top_k, len(user_mem))
         top_results = torch.topk(cos_scores, k=k)
         
         results = []
         for score, idx in zip(top_results[0], top_results[1]):
-            if score > 0.4: # Relevance threshold
-                results.append(self.memory[idx])
+            # Convert tensor to int if necessary
+            idx_val = idx.item() if hasattr(idx, 'item') else int(idx)
+            
+            if score > 0.3: # Lower threshold for relevance
+                results.append(user_mem[idx_val]['text'])
                 
-        return results
+        return "\n".join(results)

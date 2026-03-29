@@ -11,10 +11,10 @@ class AccountService:
             self.db = mongo.get_db()
         return self.db.accounts
 
-    async def initialize_defaults(self):
-        """Initialize default accounts if none exist."""
+    async def initialize_defaults(self, user_id: str):
+        """Initialize default accounts for a specific user if they have none."""
         collection = await self._get_collection()
-        count = await collection.count_documents({})
+        count = await collection.count_documents({"user_id": user_id})
         
         if count == 0:
             defaults = [
@@ -40,13 +40,21 @@ class AccountService:
                     "color": "success"
                 }
             ]
+            # Add user_id to each default
+            for d in defaults:
+                d["user_id"] = user_id
+                
             await collection.insert_many(defaults)
             return True
         return False
 
-    async def get_all_accounts(self) -> List[Dict[str, Any]]:
+    async def get_all_accounts(self, user_id: str) -> List[Dict[str, Any]]:
         collection = await self._get_collection()
-        cursor = collection.find({})
+        
+        # Ensure defaults are initialized for this user
+        await self.initialize_defaults(user_id)
+        
+        cursor = collection.find({"user_id": user_id})
         accounts = []
         async for doc in cursor:
             doc["id"] = str(doc["_id"])
@@ -54,7 +62,7 @@ class AccountService:
             accounts.append(doc)
         return accounts
 
-    async def update_balance(self, account_name: str, amount: float, is_credit: bool = False):
+    async def update_balance(self, account_name: str, amount: float, user_id: str, is_credit: bool = False):
         """
         Update account balance.
         amount: Transaction amount (always positive)
@@ -62,8 +70,11 @@ class AccountService:
         """
         collection = await self._get_collection()
         
-        # Find account (case-insensitive)
-        account = await collection.find_one({"name": {"$regex": f"^{account_name}$", "$options": "i"}})
+        # Find user's account (case-insensitive)
+        account = await collection.find_one({
+            "user_id": user_id,
+            "name": {"$regex": f"^{account_name}$", "$options": "i"}
+        })
         
         if not account:
             # If account doesn't exist, maybe create it or default to Cash?
@@ -72,8 +83,8 @@ class AccountService:
                 # Should exist from defaults, but just in case
                 return False
             
-            # Try falling back to Cash
-            account = await collection.find_one({"name": "Cash"})
+            # Try falling back to Cash for this user
+            account = await collection.find_one({"user_id": user_id, "name": "Cash"})
             if not account:
                 return False
 

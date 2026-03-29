@@ -40,4 +40,29 @@ class SecurityService:
             # If decryption fails (e.g., old unencrypted data), return original
             return token
 
+from datetime import datetime, timedelta
+from typing import Optional, Any, Union
+from jose import jwt, JWTError
+from backend.core.config import settings
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    """Generates a signed JWT access token."""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.ALGORITHM)
+    return encoded_jwt
+
+def decode_access_token(token: str) -> Optional[dict]:
+    """Decodes and validates a JWT token."""
+    try:
+        decoded_token = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGORITHM])
+        return decoded_token
+    except Exception as e:
+        return None
+
 security_service = SecurityService()

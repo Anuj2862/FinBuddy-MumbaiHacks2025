@@ -3,13 +3,17 @@
 import base64
 import uuid
 from pathlib import Path
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
-
 from backend.services.ai_orchestrator import AIOrchestrator
 from backend.utils.logger import logger
+from backend.routers.auth import get_current_user
 
-router = APIRouter(prefix="/api/voice", tags=["Voice Processing"])
+router = APIRouter(
+    prefix="/api/voice", 
+    tags=["Voice Processing"],
+    dependencies=[Depends(get_current_user)]
+)
 
 VOICE_DIR = Path("voice_uploads")
 VOICE_DIR.mkdir(parents=True, exist_ok=True)

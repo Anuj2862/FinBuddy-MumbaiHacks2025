@@ -32,11 +32,12 @@ class HealthScoreService:
             "general": 5000
         }
     
-    async def get_financial_health_score(self, days: int = 60) -> dict:
+    async def get_financial_health_score(self, user_id: str, days: int = 60) -> dict:
         """
         Calculate comprehensive financial health score.
         
         Args:
+            user_id: The ID of the user to calculate the score for
             days: Number of past days to analyze (default 60)
         
         Returns:
@@ -45,20 +46,19 @@ class HealthScoreService:
         logger.info(f"Calculating financial health score for last {days} days...")
         
         try:
-            # Fetch transactions
-            all_transactions = await self.transaction_service.get_all_transactions()
+            # Fetch transactions for the user
+            all_transactions = await self.transaction_service.get_all_transactions(user_id)
             
             # Filter by date range
             cutoff_date = datetime.utcnow() - timedelta(days=days)
             
             filtered_transactions = []
             for txn in all_transactions:
-                # Convert Transaction model to dict
-                txn_dict = txn.dict() if hasattr(txn, 'dict') else txn
-                
-                txn_date = txn_dict.get('date')
+                # txn is a Transaction model
+                txn_date = txn.date
                 if isinstance(txn_date, datetime) and txn_date >= cutoff_date:
-                    filtered_transactions.append(txn_dict)
+                    # Scorer expects dict
+                    filtered_transactions.append(txn.model_dump() if hasattr(txn, 'model_dump') else txn.dict())
             
             logger.info(f"Analyzing {len(filtered_transactions)} transactions")
             

@@ -20,6 +20,7 @@ class TransactionType(str, Enum):
 # BASE MODEL
 # ----------------------------------------------------------
 class TransactionBase(BaseModel):
+    user_id: str = Field(..., description="Owner's unique identifier (username or email)")
     txn_type: TransactionType = Field(..., description="Credited / Debited")
     amount: float = Field(..., gt=0, description="Transaction amount (> 0)")
 

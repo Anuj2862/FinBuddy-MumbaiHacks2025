@@ -112,6 +112,14 @@
             background: rgba(30, 41, 59, 0.9);
         }
     </style>
+<link rel="manifest" href="/manifest.json">
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js").then(reg => console.log("SW registered")).catch(err => console.log("SW error: ", err));
+        });
+      }
+    </script>
 </head>
 
 <body class="page-shell">
@@ -130,20 +138,23 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i> Home</a>
+                        <a class="nav-link" href="/" data-i18n="nav_home"><i class="fas fa-home me-1"></i> Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/parser"><i class="fas fa-file-alt me-1"></i> Parser</a>
+                        <a class="nav-link" href="/parser" data-i18n="nav_parser"><i class="fas fa-file-alt me-1"></i> Parser</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/chat"><i class="fas fa-comment me-1"></i> Chat</a>
+                        <a class="nav-link" href="/chat" data-i18n="nav_chat"><i class="fas fa-comment me-1"></i> Chat</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/dashboard"><i class="fas fa-chart-bar me-1"></i> Dashboard</a>
+                        <a class="nav-link active" href="/dashboard" data-i18n="nav_dashboard"><i class="fas fa-chart-bar me-1"></i> Dashboard</a>
                     </li>
-                    <li class="nav-item ms-lg-3">
+                    <li class="nav-item ms-lg-3 d-flex align-items-center gap-2">
                         <button class="btn theme-toggle" onclick="FinBuddyUtils.toggleTheme()" title="Toggle Dark Mode">
                             <i class="fas fa-moon"></i>
+                        </button>
+                        <button class="btn theme-toggle" onclick="this.textContent = FinBuddyUtils.toggleLanguage() === 'hi' ? 'A/अ' : 'EN'" title="Toggle Language" style="font-weight: bold; width: auto; padding: 0.5rem 1rem;">
+                            EN
                         </button>
                     </li>
                 </ul>
@@ -158,8 +169,7 @@
                 <div class="d-flex align-items-center">
                     <i class="fas fa-bullhorn fa-2x me-3"></i>
                     <div>
-                        <p class="text-muted mb-0">Real-time insights into your financial health and compliance status
-                        </p>
+                        <p class="text-muted mb-0" id="alertMessage">Real-time insights into your financial health and compliance status</p>
                     </div>
                 </div>
                 <div class="btn-group">
@@ -173,6 +183,20 @@
             </div>
         </div>
 
+        <!-- Global Anomaly Alert Banner (Hidden by default) -->
+        <div id="anomalyBanner" class="anomaly-banner d-none">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-circle fa-2x text-danger me-3"></i>
+                    <div>
+                        <h6 class="text-danger fw-bold mb-1">Unusual Spending Detected</h6>
+                        <p class="text-danger mb-0" id="anomalyMessage">Checking for outliers...</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" aria-label="Close" onclick="document.getElementById('anomalyBanner').classList.add('d-none')"></button>
+            </div>
+        </div>
+
         <!-- KPI Cards Row (3 Cards) -->
         <div class="row mb-4" id="kpiCards">
             <!-- Card 1: Total Credit -->
@@ -182,7 +206,7 @@
                         <div class="kpi-icon text-success">
                             <i class="fas fa-hand-holding-usd"></i>
                         </div>
-                        <h6 class="card-title text-success text-uppercase">Total Credit</h6>
+                        <h6 class="card-title text-success text-uppercase" data-i18n="kpi_credit">Total Credit</h6>
                         <div id="totalCredit" class="kpi-amount text-success">₹0</div>
                         <small class="text-muted">All incoming transactions</small>
                     </div>
@@ -196,7 +220,7 @@
                         <div class="kpi-icon text-danger">
                             <i class="fas fa-shopping-bag"></i>
                         </div>
-                        <h6 class="card-title text-danger text-uppercase">Total Debit</h6>
+                        <h6 class="card-title text-danger text-uppercase" data-i18n="kpi_debit">Total Debit</h6>
                         <div id="totalDebit" class="kpi-amount text-danger">₹0</div>
                         <small class="text-muted">All outgoing expenses</small>
                     </div>
@@ -210,7 +234,7 @@
                         <div class="kpi-icon text-primary">
                             <i class="fas fa-balance-scale"></i>
                         </div>
-                        <h6 class="card-title text-primary text-uppercase">Net Balance</h6>
+                        <h6 class="card-title text-primary text-uppercase" data-i18n="kpi_net">Net Balance</h6>
                         <div id="netBalance" class="kpi-amount text-primary">₹0</div>
                         <small class="text-muted">Current available balance</small>
                     </div>
@@ -288,11 +312,61 @@
                                 </div>
                             </div>
                         </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        </div>
+
+        <!-- Heatmap & Budget Row -->
+        <div class="row mb-4 animate-fade-in">
+            <!-- Spending Heatmap Calendar -->
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="chart-title mb-0" data-i18n="spending_heatmap">
+                                <i class="fas fa-calendar-alt me-2 text-primary"></i>Spending Heatmap
+                            </h5>
+                            <small class="text-muted" id="heatmapMonth">This Month</small>
+                        </div>
+                        <div class="heatmap-container">
+                            <div class="d-grid" style="grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center;">
+                                <div class="heatmap-day-label">Mo</div>
+                                <div class="heatmap-day-label">Tu</div>
+                                <div class="heatmap-day-label">We</div>
+                                <div class="heatmap-day-label">Th</div>
+                                <div class="heatmap-day-label">Fr</div>
+                                <div class="heatmap-day-label">Sa</div>
+                                <div class="heatmap-day-label">Su</div>
+                            </div>
+                            <div id="heatmapGrid" class="heatmap-grid">
+                                <!-- Generated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budget Planner Progress Bars -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="chart-title mb-0" data-i18n="monthly_budgets">
+                                <i class="fas fa-bullseye me-2 text-success"></i>Monthly Budgets
+                            </h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="text-muted small mb-0">Limits (₹):</label>
+                                <input type="number" id="globalBudgetLimit" class="budget-limit-input" value="50000" onchange="dashboard.updateGlobalBudgetLimit(this.value)">
+                            </div>
+                        </div>
+                        <div id="budgetBarsContainer" class="flex-grow-1 overflow-auto pe-2" style="max-height: 250px;">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Monthly Expense Distribution Section -->
@@ -301,7 +375,7 @@
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-gradient text-white py-3"
                         style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                        <h5 class="mb-0">
+                        <h5 class="mb-0" data-i18n="expense_distribution">
                             <i class="fas fa-chart-pie me-2"></i>Monthly Expense Distribution
                         </h5>
                     </div>
@@ -351,11 +425,19 @@
         <!-- Transaction History -->
         <div class="card transaction-table animate-slide-up">
             <div class="card-header bg-primary text-white py-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <h5 class="mb-0" data-i18n="recent_transactions">
                         <i class="fas fa-history me-2"></i>Recent Transactions
                     </h5>
-                    <span class="badge bg-light text-primary" id="transactionCount">0 transactions</span>
+                    
+                    <!-- Search & Filter -->
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="search-wrapper">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="transactionSearch" class="form-control form-control-sm search-input text-dark" placeholder="Search transactions..." onkeyup="dashboard.filterTransactions(this.value)" autocomplete="off">
+                        </div>
+                        <span class="badge bg-light text-primary" id="transactionCount">0 transactions</span>
+                    </div>
                 </div>
             </div>
             <div class="card-body p-0">

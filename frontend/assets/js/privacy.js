@@ -10,12 +10,12 @@ class PrivacyManager {
 
     async exportData() {
         try {
-            const btn = document.getElementById('btnExportData');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Exporting...';
-            btn.disabled = true;
-
-            const response = await fetch(`${this.apiBase}/export`);
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/privacy/export', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
             if (response.ok) {
                 const blob = await response.blob();
@@ -55,8 +55,12 @@ class PrivacyManager {
         }
 
         try {
-            const response = await fetch(`${this.apiBase}/account`, {
-                method: 'DELETE'
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/privacy/account', {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
             if (response.ok) {

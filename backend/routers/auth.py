@@ -1,16 +1,25 @@
 """
 Authentication router for user registration, login, and OTP verification.
 """
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordBearer
+from typing import Optional
 from pydantic import BaseModel, EmailStr, validator
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
-
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
 from datetime import datetime
 from backend.core.database import mongo
 from backend.services.email_service import email_service
+from backend.core.security import create_access_token, decode_access_token
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -56,6 +65,57 @@ class AuthResponse(BaseModel):
     success: bool
     message: str
     data: dict = {}
+    access_token: Optional[str] = None
+    token_type: Optional[str] = None
+
+# ---------------------------------------------------------
+# DEPENDENCY: Get Current User
+# ---------------------------------------------------------
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    """
+    Dependency to get the current authenticated user from JWT token.
+    Throws 401 if token is invalid or user not found.
+    """
+    from backend.utils.logger import logger
+    logger.info(f"🔑 Verifying token: {token[:10]}...")
+    
+    try:
+        payload = decode_access_token(token)
+        if not payload:
+            logger.error(f"❌ JWT Decode returned None for token: {token[:15]}...")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        username = payload.get("sub")
+        if not username:
+            logger.error(f"❌ JWT Payload Missing 'sub'. Full payload: {payload}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload",
+            )
+            
+        db = mongo.get_db()
+        user = await db["users"].find_one({"username": username})
+        if not user:
+            logger.error(f"❌ User Not Found: '{username}'")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+            )
+            
+        logger.info(f"✅ User Authenticated: {username}")
+        return user
+    except Exception as e:
+        logger.error(f"🔥 Unexpected Auth Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Authentication error: {str(e)}",
+        )
+    
+    return user
 
 # Endpoints
 @router.post("/register", response_model=AuthResponse)
@@ -141,9 +201,14 @@ async def login(request: LoginRequest):
             {"$set": {"last_login": datetime.now()}}
         )
         
+        # Generate Access Token
+        access_token = create_access_token(data={"sub": user["username"]})
+        
         return AuthResponse(
             success=True,
             message="Login successful!",
+            access_token=access_token,
+            token_type="bearer",
             data={
                 "user_id": str(user["_id"]),
                 "username": user["username"],
@@ -183,9 +248,14 @@ async def verify_otp(request: VerifyOTPRequest):
         # Get user data
         user = await users_collection.find_one({"email": request.email})
         
+        # Generate Access Token
+        access_token = create_access_token(data={"sub": user["username"]})
+        
         return AuthResponse(
             success=True,
             message="Login successful!",
+            access_token=access_token,
+            token_type="bearer",
             data={
                 "user_id": str(user["_id"]),
                 "username": user["username"],

@@ -115,6 +115,14 @@
             box-shadow: 0 10px 30px rgba(255, 0, 128, 0.3);
         }
     </style>
+<link rel="manifest" href="/manifest.json">
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js").then(reg => console.log("SW registered")).catch(err => console.log("SW error: ", err));
+        });
+      }
+    </script>
 </head>
 
 <body class="page-shell">
@@ -133,20 +141,23 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i> Home</a>
+                        <a class="nav-link" href="/" data-i18n="nav_home"><i class="fas fa-home me-1"></i> Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/parser"><i class="fas fa-file-alt me-1"></i> Parser</a>
+                        <a class="nav-link active" href="/parser" data-i18n="nav_parser"><i class="fas fa-file-alt me-1"></i> Parser</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/chat"><i class="fas fa-comment me-1"></i> Chat</a>
+                        <a class="nav-link" href="/chat" data-i18n="nav_chat"><i class="fas fa-comment me-1"></i> Chat</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/dashboard"><i class="fas fa-chart-bar me-1"></i> Dashboard</a>
+                        <a class="nav-link" href="/dashboard" data-i18n="nav_dashboard"><i class="fas fa-chart-bar me-1"></i> Dashboard</a>
                     </li>
-                    <li class="nav-item ms-lg-3">
+                    <li class="nav-item ms-lg-3 d-flex align-items-center gap-2">
                         <button class="btn theme-toggle" onclick="FinBuddyUtils.toggleTheme()" title="Toggle Dark Mode">
                             <i class="fas fa-moon"></i>
+                        </button>
+                        <button class="btn theme-toggle" onclick="this.textContent = FinBuddyUtils.toggleLanguage() === 'hi' ? 'A/अ' : 'EN'" title="Toggle Language" style="font-weight: bold; width: auto; padding: 0.5rem 1rem;">
+                            EN
                         </button>
                     </li>
                 </ul>

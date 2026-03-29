@@ -121,10 +121,13 @@ async def parser_page():
 # ---------------------------------------------------------
 @app.get("/health")
 async def health_check():
+    from backend.core.config import settings
     return {
         "status": "healthy",
         "version": "2.0",
-        "service": "FinBuddy AI Backend",
+        "env": settings.APP_ENV,
+        "jwt_secret_set": len(settings.JWT_SECRET_KEY) > 0,
+        "algo": settings.ALGORITHM
     }
 
 

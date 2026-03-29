@@ -8,8 +8,18 @@ class FinBuddyChat {
         this.suggestions = document.getElementById("suggestions");
         this.sendBtn = document.getElementById("sendBtn");
 
-        this.userId = "user_" + Math.random().toString(36).slice(2);
+        // Use authenticated user's identity from JWT stored data
+        // Fallback to random only if token doesn't exist (redirect handles that case)
+        const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+        this.userId = userData.username || userData.email || "guest_user";
         this.isProcessing = false;
+
+        // Auth check on page load
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+            return;
+        }
 
         this.sendBtn.onclick = () => this.sendMessage();
         this.messageInput.addEventListener("keypress", e => {
@@ -36,12 +46,23 @@ class FinBuddyChat {
         this.isProcessing = true;
 
         try {
+            const token = localStorage.getItem('token');
+            console.log("🔑 Token size check:", token ? token.length : 0);
+            if (!token) {
+                console.warn("⚠️ No token found. Redirecting to login...");
+                window.location.href = '/';
+                return;
+            }
+
             const res = await fetch("/api/ai/chat", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     message: msg,
-                    user_id: this.userId,
+                    user_id: this.userId, // Session session ID, backend will use auth user_id
                     is_voice: isVoice,
                     parsed_data: parsedData
                 })

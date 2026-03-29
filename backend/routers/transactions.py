@@ -1,6 +1,6 @@
 # backend/routers/transactions.py
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from datetime import datetime
 import uuid
@@ -14,8 +14,13 @@ from backend.parsers.bank_email_parser import parse_email_text
 from backend.parsers.pdf_statement_parser import parse_pdf_statement
 
 from backend.utils.logger import logger
+from backend.routers.auth import get_current_user
 
-router = APIRouter(prefix="/api/transactions", tags=["Transactions"])
+router = APIRouter(
+    prefix="/api/transactions", 
+    tags=["Transactions"],
+    dependencies=[Depends(get_current_user)]
+)
 
 
 # ---------------------------------------------------------
@@ -83,38 +88,64 @@ async def parse_sms_endpoint(payload: SMSText):
 # 1️⃣ CREATE TXN FROM SMS
 # =========================================================
 @router.post("/from-sms")
-async def create_transaction_from_sms(payload: SMSText):
-    text = payload.text.strip()
+async def create_transaction_from_sms(payload: SMSText, current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("username") or current_user.get("email")
+    lines = [line.strip() for line in payload.text.split('\n') if line.strip()]
 
-    logger.info(f"📩 Creating transaction from SMS: {text}")
+    if not lines:
+        raise HTTPException(status_code=400, detail="SMS text is empty")
 
-    ai_result = await get_orchestrator().process_sms(text)
+    logger.info(f"📩 Creating transactions from {len(lines)} SMS lines...")
 
-    if not ai_result.get("success"):
-        raise HTTPException(status_code=500, detail="SMS AI pipeline failed")
+    saved_txns = []
+    errors = []
 
-    parsed = ai_result.get("parsed_data")
+    for text in lines:
+        try:
+            ai_result = await get_orchestrator().process_sms(text)
+            
+            if not ai_result.get("success"):
+                errors.append({"text": text, "error": "AI pipeline failed"})
+                continue
 
-    txn_dict = {
-        "date": datetime.now(),
-        "txn_type": parsed.get("txn_type", "Unknown"),
-        "amount": parsed.get("amount", 0),
-        "counterparty": parsed.get("counterparty", "Unknown"),
-        "category": ai_result.get("category", "Unknown"),
-        "message": text,
-        "ai_insight": ai_result.get("ai_insight"),
-        "compliance_alert": None
+            parsed = ai_result.get("parsed_data")
+
+            txn_dict = {
+                "date": datetime.now(),
+                "txn_type": parsed.get("txn_type", "Unknown"),
+                "amount": parsed.get("amount", 0),
+                "counterparty": parsed.get("counterparty", "Unknown"),
+                "category": ai_result.get("category", "Unknown"),
+                "message": text,
+                "ai_insight": ai_result.get("ai_insight"),
+                "compliance_alert": None
+            }
+
+            saved = await get_transaction_service().create_transaction(txn_dict, user_id=user_id)
+            saved_txns.append(saved.dict())
+        except Exception as e:
+            logger.error(f"Error parsing line: {text} - {str(e)}")
+            errors.append({"text": text, "error": str(e)})
+
+    # If nothing succeeded but we tried, throw error
+    if not saved_txns and errors:
+        raise HTTPException(status_code=500, detail="Failed to parse any of the provided SMS lines.")
+
+    return {
+        "success": True, 
+        "total_parsed": len(saved_txns),
+        "total_failed": len(errors),
+        "transactions": saved_txns,
+        "errors": errors
     }
-
-    saved = await get_transaction_service().create_transaction(txn_dict)
-    return saved.dict()
 
 
 # =========================================================
 # 2️⃣ FROM VOICE (STT → NLP → AI)
 # =========================================================
 @router.post("/from-voice")
-async def create_transaction_from_voice(payload: VoiceCommand):
+async def create_transaction_from_voice(payload: VoiceCommand, current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("username") or current_user.get("email")
 
     logger.info("🎙 Processing voice transaction...")
 
@@ -136,7 +167,7 @@ async def create_transaction_from_voice(payload: VoiceCommand):
         "compliance_alert": None
     }
 
-    saved = await get_transaction_service().create_transaction(txn_dict)
+    saved = await get_transaction_service().create_transaction(txn_dict, user_id=user_id)
     return saved.dict()
 
 
@@ -144,7 +175,8 @@ async def create_transaction_from_voice(payload: VoiceCommand):
 # 3️⃣ FROM RECEIPT OCR
 # =========================================================
 @router.post("/from-receipt")
-async def create_transaction_from_receipt(payload: ReceiptOCR):
+async def create_transaction_from_receipt(payload: ReceiptOCR, current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("username") or current_user.get("email")
 
     text = payload.text.strip()
     logger.info("🧾 Processing receipt OCR...")
@@ -162,7 +194,7 @@ async def create_transaction_from_receipt(payload: ReceiptOCR):
         "compliance_alert": None,
     }
 
-    saved = await get_transaction_service().create_transaction(txn)
+    saved = await get_transaction_service().create_transaction(txn, user_id=user_id)
     return saved.dict()
 
 
@@ -170,7 +202,8 @@ async def create_transaction_from_receipt(payload: ReceiptOCR):
 # 4️⃣ FROM EMAIL
 # =========================================================
 @router.post("/from-email")
-async def create_transaction_from_email(payload: EmailText):
+async def create_transaction_from_email(payload: EmailText, current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("username") or current_user.get("email")
 
     parsed = parse_email_text(payload.text)
 
@@ -185,7 +218,7 @@ async def create_transaction_from_email(payload: EmailText):
         "compliance_alert": None
     }
 
-    saved = await get_transaction_service().create_transaction(txn)
+    saved = await get_transaction_service().create_transaction(txn, user_id=user_id)
     return saved.dict()
 
 
@@ -193,7 +226,8 @@ async def create_transaction_from_email(payload: EmailText):
 # 5️⃣ FROM PDF BANK STATEMENT
 # =========================================================
 @router.post("/from-pdf")
-async def create_transactions_from_pdf(payload: PDFText):
+async def create_transactions_from_pdf(payload: PDFText, current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("username") or current_user.get("email")
 
     result = parse_pdf_statement(payload.ocr_text)
     txns = result.get("transactions", [])
@@ -212,7 +246,7 @@ async def create_transactions_from_pdf(payload: PDFText):
             "compliance_alert": None
         }
 
-        saved_txn = await get_transaction_service().create_transaction(base)
+        saved_txn = await get_transaction_service().create_transaction(base, user_id=user_id)
         saved.append(saved_txn.dict())
 
     return {"total": len(saved), "saved": saved}
@@ -222,8 +256,9 @@ async def create_transactions_from_pdf(payload: PDFText):
 # 6️⃣ GET ALL TXNS
 # =========================================================
 @router.get("/")
-async def get_transactions():
-    txns = await get_transaction_service().get_all_transactions()
+async def get_transactions(current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("username") or current_user.get("email")
+    txns = await get_transaction_service().get_all_transactions(user_id)
     return {"transactions": [t.dict() for t in txns]}
 
 
@@ -231,16 +266,18 @@ async def get_transactions():
 # 7️⃣ SUMMARY
 # =========================================================
 @router.get("/summary")
-async def get_summary():
-    return await get_transaction_service().get_transactions_summary()
+async def get_summary(current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("username") or current_user.get("email")
+    return await get_transaction_service().get_transactions_summary(user_id)
 
 
 # =========================================================
 # 8️⃣ DELETE TXN
 # =========================================================
 @router.delete("/{txn_id}")
-async def delete_transaction(txn_id: str):
-    ok = await get_transaction_service().delete_transaction(txn_id)
+async def delete_transaction(txn_id: str, current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("username") or current_user.get("email")
+    ok = await get_transaction_service().delete_transaction(txn_id, user_id=user_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return {"success": True, "deleted_id": txn_id}
@@ -250,8 +287,9 @@ async def delete_transaction(txn_id: str):
 # 9️⃣ UPDATE TXN
 # =========================================================
 @router.put("/{txn_id}")
-async def update_transaction(txn_id: str, update_data: dict):
-    updated = await get_transaction_service().update_transaction(txn_id, update_data)
+async def update_transaction(txn_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("username") or current_user.get("email")
+    updated = await get_transaction_service().update_transaction(txn_id, update_data, user_id=user_id)
     if not updated:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return updated.dict()
@@ -267,14 +305,15 @@ def get_prediction_service():
 
 
 @router.get("/predictions")
-async def get_budget_predictions():
+async def get_budget_predictions(current_user: dict = Depends(get_current_user)):
     """
     Get AI-predicted expenses for next month by category.
     Uses Prophet time-series forecasting.
     """
     try:
         service = get_prediction_service()
-        predictions = service.get_monthly_predictions()
+        user_id = current_user.get("username") or current_user.get("email")
+        predictions = await service.get_monthly_predictions(user_id)
         
         return {
             "success": True,
@@ -287,13 +326,14 @@ async def get_budget_predictions():
 
 
 @router.get("/alerts")
-async def get_overspend_alerts():
+async def get_overspend_alerts(current_user: dict = Depends(get_current_user)):
     """
     Get overspend alerts for categories predicted to exceed budget.
     """
     try:
         service = get_prediction_service()
-        alerts = service.get_overspend_alerts()
+        user_id = current_user.get("username") or current_user.get("email")
+        alerts = await service.get_overspend_alerts(user_id)
         
         return {
             "success": True,
@@ -306,13 +346,14 @@ async def get_overspend_alerts():
 
 
 @router.get("/savings")
-async def get_saving_opportunities():
+async def get_saving_opportunities(current_user: dict = Depends(get_current_user)):
     """
     Get AI-identified saving opportunities based on decreasing spending trends.
     """
     try:
         service = get_prediction_service()
-        opportunities = service.get_saving_opportunities()
+        user_id = current_user.get("username") or current_user.get("email")
+        opportunities = await service.get_saving_opportunities(user_id)
         
         return {
             "success": True,
@@ -325,13 +366,14 @@ async def get_saving_opportunities():
 
 
 @router.get("/insights/complete")
-async def get_complete_insights():
+async def get_complete_insights(current_user: dict = Depends(get_current_user)):
     """
     Get all ML insights: predictions, alerts, and saving opportunities in one call.
     """
     try:
         service = get_prediction_service()
-        insights = service.get_complete_insights()
+        user_id = current_user.get("username") or current_user.get("email")
+        insights = await service.get_complete_insights(user_id)
         
         return {
             "success": True,

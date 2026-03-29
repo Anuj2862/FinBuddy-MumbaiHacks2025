@@ -81,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Login Form Handler
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -89,6 +88,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const username = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
+            const btn = document.querySelector('#loginForm button[type="submit"]');
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Logging in...'; }
 
             try {
                 const response = await fetch('/api/auth/login', {
@@ -105,13 +107,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    // Login successful
+                    // Login successful — save token and user data
                     localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('token', data.access_token);
+                    // Save under both keys for compatibility with chat.js and other modules
                     localStorage.setItem('user', JSON.stringify(data.data));
+                    localStorage.setItem('user_data', JSON.stringify(data.data));
 
                     // Close modal
                     const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
-                    loginModal.hide();
+                    if (loginModal) loginModal.hide();
 
                     // Redirect to dashboard
                     window.location.href = '/dashboard';
@@ -123,9 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showError('loginError', 'An error occurred during login');
             } finally {
                 // Reset button state
-                const btn = document.querySelector('#loginForm button[type="submit"]');
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+                if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
             }
         });
     }
@@ -150,6 +153,8 @@ function checkAuth() {
 // Logout function
 function logout() {
     localStorage.removeItem('user');
+    localStorage.removeItem('user_data');
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('token');
     window.location.href = '/';
 }

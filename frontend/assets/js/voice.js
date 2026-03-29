@@ -59,9 +59,20 @@ class VoiceRecorder {
             window.chat.addMessage(`🎤 You said: "${text}"`, "user");
             window.chat.showTyping();
 
+            const token = localStorage.getItem('token');
+            console.log("🔑 Voice Token size check:", token ? token.length : 0);
+            if (!token) {
+                console.warn("⚠️ No token found for voice processing.");
+                window.chat.addMessage("Please login to use voice features.", "bot", "error");
+                return;
+            }
+
             const res = await fetch("/api/voice/process_text", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     text: text,
                     user_id: window.chat.userId

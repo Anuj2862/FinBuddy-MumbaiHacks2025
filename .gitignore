@@ -55,7 +55,7 @@ simple_test_output.txt
 
 # Uploads & Generated Files
 voice_uploads/
-invoices/*.pdf
+invoices/
 *.wav
 *.mp3
 

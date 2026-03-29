@@ -2,7 +2,7 @@
 
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import field_validator
+from pydantic import Field, field_validator
 
 
 class Settings(BaseSettings):
@@ -31,6 +31,13 @@ class Settings(BaseSettings):
     # ---------------------------------------------------------
     GST_THRESHOLD: float = 2000000.0  # 20 Lakhs default
     APP_ENV: str = "development"      # Allowed: development | production | staging
+    
+    # Authentication Settings
+    # ---------------------------------------------------------
+    # In production, this MUST be a long, random string from .env
+    JWT_SECRET_KEY: str = Field(default="YOUR_SUPER_SECRET_HACKATHON_KEY_2025", env="JWT_SECRET_KEY")
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 1 week for hackathon demo
 
     # ---------------------------------------------------------
     # Pydantic Settings Configuration

@@ -48,28 +48,23 @@ class PredictionService:
         self.transaction_service = TransactionService()
         logger.info("PredictionService initialized")
     
-    def get_historical_transactions(self, days: int = 60) -> List[dict]:
+    async def get_historical_transactions(self, user_id: str, days: int = 60) -> List[dict]:
         """
-        Fetch historical transactions from the database.
-        
-        Args:
-            days: Number of past days to fetch
-        
-        Returns:
-            List of transaction dictionaries
+        Fetch historical transactions from the database for a specific user.
         """
         try:
-            # Get all transactions
-            transactions = self.transaction_service.get_all_transactions()
+            # Get all transactions for the user
+            transactions = await self.transaction_service.get_all_transactions(user_id)
             
             # Filter by date range
             cutoff_date = datetime.utcnow() - timedelta(days=days)
             
             filtered = []
             for txn in transactions:
-                txn_date = txn.get('date')
+                # txn is a Transaction model, not a dict
+                txn_date = txn.date
                 if isinstance(txn_date, datetime) and txn_date >= cutoff_date:
-                    filtered.append(txn)
+                    filtered.append(txn.model_dump() if hasattr(txn, 'model_dump') else txn.dict())
             
             logger.info(f"Retrieved {len(filtered)} transactions from last {days} days")
             return filtered
@@ -92,17 +87,17 @@ class PredictionService:
             "general": 5000
         }
     
-    def get_monthly_predictions(self) -> Dict[str, dict]:
+    async def get_monthly_predictions(self, user_id: str) -> Dict[str, dict]:
         """
         Generate predictions for the next month across all categories.
         
         Returns:
             Dict of {category: prediction_details}
         """
-        logger.info("Generating monthly budget predictions...")
+        logger.info(f"Generating monthly budget predictions for user: {user_id}")
         
         # Fetch historical data
-        transactions = self.get_historical_transactions(days=60)
+        transactions = await self.get_historical_transactions(user_id, days=60)
         
         if not transactions:
             logger.warning("No transactions available for predictions")
@@ -116,16 +111,16 @@ class PredictionService:
         
         return predictions
     
-    def get_overspend_alerts(self) -> List[dict]:
+    async def get_overspend_alerts(self, user_id: str) -> List[dict]:
         """
         Get alerts for categories predicted to exceed budget.
         
         Returns:
             List of alert dictionaries
         """
-        logger.info("Checking for overspend alerts...")
+        logger.info(f"Checking for overspend alerts for user: {user_id}")
         
-        predictions = self.get_monthly_predictions()
+        predictions = await self.get_monthly_predictions(user_id)
         alerts = []
         
         for category, pred in predictions.items():
@@ -151,17 +146,17 @@ class PredictionService:
         logger.info(f"Found {len(alerts)} overspend alerts")
         return alerts
     
-    def get_saving_opportunities(self) -> List[dict]:
+    async def get_saving_opportunities(self, user_id: str) -> List[dict]:
         """
         Identify categories where spending is decreasing (saving opportunities).
         
         Returns:
             List of opportunity dictionaries
         """
-        logger.info("Identifying saving opportunities...")
+        logger.info(f"Identifying saving opportunities for user: {user_id}")
         
-        transactions = self.get_historical_transactions(days=60)
-        predictions = self.get_monthly_predictions()
+        transactions = await self.get_historical_transactions(user_id, days=60)
+        predictions = await self.get_monthly_predictions(user_id)
         
         opportunities = []
         
@@ -188,16 +183,13 @@ class PredictionService:
         logger.info(f"Found {len(opportunities)} saving opportunities")
         return opportunities
     
-    def get_complete_insights(self) -> dict:
+    async def get_complete_insights(self, user_id: str) -> dict:
         """
-        Get all prediction insights in one call.
-        
-        Returns:
-            Dictionary with predictions, alerts, and opportunities
+        Get all prediction insights in one call for a specific user.
         """
         return {
-            "predictions": self.get_monthly_predictions(),
-            "alerts": self.get_overspend_alerts(),
-            "saving_opportunities": self.get_saving_opportunities(),
+            "predictions": await self.get_monthly_predictions(user_id),
+            "alerts": await self.get_overspend_alerts(user_id),
+            "saving_opportunities": await self.get_saving_opportunities(user_id),
             "timestamp": datetime.utcnow().isoformat()
         }

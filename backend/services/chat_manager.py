@@ -81,10 +81,11 @@ class ChatManager:
             msg = message.strip()
             logger.info(f"💬 Chat message received: {msg}")
 
-            # 1. Retrieve Context (Memory)
-            context = self.memory.get_context(msg)
+            # 2. Intent Detection
+            # Pass user_id to get_context for isolation
+            context = self.memory.get_context(user_id, msg)
             if context:
-                logger.info(f"🧠 Found {len(context)} relevant past interactions.")
+                logger.info(f"🧠 Found {len(context)} relevant past interactions for {user_id}.")
 
             # 2. Intent Detection
             intent, confidence = self.intent_classifier.predict(msg)
@@ -122,11 +123,11 @@ class ChatManager:
             logger.info(f"🔍 Extracted Entities: {entities}")
 
             # 4. Generate Response based on Intent (with Context)
-            # NOW ASYNC to handle DB calls
-            response_data = await self._generate_response(intent, entities, msg, context)
+            # Pass user_id for DB isolation
+            response_data = await self._generate_response(intent, entities, msg, user_id, context)
 
-            # 5. Update Memory
-            self.memory.add_interaction(msg, response_data['text'], intent, entities)
+            # 5. Update Memory (User-Isolated)
+            self.memory.add_interaction(user_id, msg, response_data['text'], intent, entities)
 
             return response_data
 
@@ -140,7 +141,7 @@ class ChatManager:
     # INTERNAL HELPERS
     # ========================================================================================
 
-    async def _generate_response(self, intent, entities, user_message, context=None):
+    async def _generate_response(self, intent, entities, user_message, user_id, context=None):
         """Generate response based on ML intent, entities, and conversation context"""
         
         # 0. Context-Aware Intent Refinement
@@ -174,7 +175,7 @@ class ChatManager:
             # REAL DB CALL: Get Balance
             # -------------------------------------------------------
             try:
-                summary = await self.transaction_service.get_transactions_summary()
+                summary = await self.transaction_service.get_transactions_summary(user_id)
                 text = (
                     "💰 **Your Current Balance:**\n\n"
                     f"• Total Income: ₹{summary['total_credit']:,.2f}\n"
@@ -220,7 +221,7 @@ class ChatManager:
                 
             # 3. Budget Overshoot Check
             # Get current month stats for accurate projection
-            summary = await self.transaction_service.get_transactions_summary()
+            summary = await self.transaction_service.get_transactions_summary(user_id)
             current_spend = summary['total_debit'] # Simplified, ideally should be this month's debit
             day_of_month = datetime.now().day
             
@@ -274,7 +275,7 @@ class ChatManager:
                 txn_data["txn_type"] = TransactionType.CREDITED.value
                 insight = insights["Income"]
 
-            await self.transaction_service.create_transaction(txn_data)
+            await self.transaction_service.create_transaction(txn_data, user_id)
             
             text = (
                 "✅ **Transaction Added Successfully!**\n\n"
@@ -293,7 +294,7 @@ class ChatManager:
             # -------------------------------------------------------
             # REAL DB CALL: Get History
             # -------------------------------------------------------
-            txs = await self.transaction_service.get_all_transactions()
+            txs = await self.transaction_service.get_all_transactions(user_id)
             recent = txs[:5] # Top 5
             
             if not recent:
@@ -311,7 +312,7 @@ class ChatManager:
             # -------------------------------------------------------
             # REAL DB CALL: Health Score
             # -------------------------------------------------------
-            summary = await self.transaction_service.get_transactions_summary()
+            summary = await self.transaction_service.get_transactions_summary(user_id)
             score, note = self.scorer.calculate_score(
                 summary['total_credit'], 
                 summary['total_debit'], 
