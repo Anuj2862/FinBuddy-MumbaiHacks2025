@@ -249,6 +249,45 @@ app.delete('/api/transactions/:id', async (req, res) => {
     }
 });
 
+/**
+ * AI Consultant Endpoint
+ */
+app.get('/api/ai/consult', async (req, res) => {
+    try {
+        const userId = req.query.userId;
+        if (!userId) return res.status(400).json({ error: 'userId is required' });
+
+        const transactions = await Transaction.findAll({ where: { userId } });
+        const today = new Date().toISOString().split('T')[0];
+        
+        const todayExpenses = transactions.filter(t => {
+            const tDate = t.date ? new Date(t.date).toISOString().split('T')[0] : '';
+            return tDate === today && t.type === 'expense';
+        });
+        const totalToday = todayExpenses.reduce((acc, t) => acc + t.amount, 0);
+        
+        // Categorize for advice
+        const catMap = {};
+        todayExpenses.forEach(t => catMap[t.category] = (catMap[t.category] || 0) + t.amount);
+        const topCat = Object.keys(catMap).reduce((a, b) => catMap[a] > catMap[b] ? a : b, 'N/A');
+
+        let advice = "";
+        if (totalToday === 0) {
+            advice = "You haven't recorded any expenses today. Great start! Remember to track even small tea/snack costs.";
+        } else if (totalToday > 1500) {
+            advice = `High spending alert! You've spent ₹${totalToday} today. Your top category is ${topCat}. Try to cut down on non-essentials tomorrow.`;
+        } else if (catMap['Food'] > totalToday * 0.4) {
+            advice = "You're spending a significant portion of your daily budget on Food. Bringing a lunch box could save you ₹2000+ monthly!";
+        } else {
+            advice = "Your spending pattern looks balanced today. Keep your 'Bucket' under your daily goal to maintain your streak!";
+        }
+
+        res.json({ advice });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Start Server
 app.listen(PORT, () => {
     console.log(`FinBuddy Server running on port ${PORT}`);

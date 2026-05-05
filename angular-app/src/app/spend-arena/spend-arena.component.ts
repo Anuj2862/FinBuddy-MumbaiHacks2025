@@ -50,6 +50,8 @@ export class SpendArenaComponent implements OnInit, OnDestroy {
   percentage = 0;
   heatmapData: { level: string }[] = [];
   personality = 'Neutral Spender';
+  aiAdvice: string = '';
+  isConsulting: boolean = false;
 
   // 3D Pie slices
   pie3dSlices: Pie3DSlice[] = [
@@ -81,6 +83,7 @@ export class SpendArenaComponent implements OnInit, OnDestroy {
         this.updateStats();
         this.updateChart();
         this.calculateAnalytics();
+        this.consultAI(); // Auto-trigger advice
       });
   }
 
@@ -102,7 +105,44 @@ export class SpendArenaComponent implements OnInit, OnDestroy {
 
       this.arenaService.addSpend(formValue.amount, formValue.category);
       this.spendForm.reset({ category: formValue.category });
+      
+      // Auto-refresh advice if it was open
+      if (this.aiAdvice) this.consultAI();
     }
+  }
+
+  consultAI(): void {
+    // Local Analysis Fallback for instant response
+    const split = this.arenaService.getCategorySplit();
+    const total = this.totalSpent;
+    const topCat = this.highestCategory;
+
+    let localAdvice = "";
+    if (total === 0) {
+      localAdvice = "Your bucket is empty! Start adding expenses to get personalized AI coaching.";
+    } else if (total > this.dailyGoal) {
+      localAdvice = `Goal Exceeded! You've spent ₹${total.toFixed(0)}, which is ₹${(total - this.dailyGoal).toFixed(0)} over your limit. Focus on essentials only for the rest of the day.`;
+    } else if (topCat !== 'N/A' && split[topCat] > total * 0.5) {
+      localAdvice = `Concentrated Spend: Over 50% of your budget is going to ${topCat}. Consider if this is a fixed or variable cost you can optimize.`;
+    } else {
+      localAdvice = "Balanced Spending: Your current bucket follows a healthy distribution. You're on track to keep your streak!";
+    }
+
+    // Set local advice first for instant UI feedback
+    if (!this.aiAdvice) this.aiAdvice = localAdvice;
+
+    // Then try to get the "Smart" advice from Backend
+    this.isConsulting = true;
+    this.arenaService.getAIAdvice('5').subscribe({
+      next: (res) => {
+        if (res && res.advice) this.aiAdvice = res.advice;
+        this.isConsulting = false;
+      },
+      error: () => {
+        // Keep the local advice if backend fails
+        this.isConsulting = false;
+      }
+    });
   }
 
   getIcon(category: string): string {

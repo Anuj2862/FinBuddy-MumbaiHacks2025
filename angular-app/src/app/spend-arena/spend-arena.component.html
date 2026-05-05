@@ -31,7 +31,7 @@
     <div style="font-size: 1.8rem; font-weight: bold;">₹{{ dailyGoal }}</div>
   </div>
   
-  <div class="card streak" style="display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; color: var(--warning);">
+  <div class="card streak">
     <i class="fas fa-fire me-2"></i> {{ streak }} Day Streak
   </div>
 
@@ -87,7 +87,26 @@
     <app-pie3d [slices]="pie3dSlices" [size]="300"></app-pie3d>
   </div>
 
-  <!-- ROW 3 -->
+  <!-- ROW 3: AI Consultant (Prominent Middle) -->
+  <div class="card consultant">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h2 style="margin: 0; font-size: 1.2rem;">
+        <i class="fas fa-robot me-2" style="color: #4B7BF5;"></i> AI Financial Insight
+      </h2>
+    </div>
+    
+    <div class="advice-box" *ngIf="aiAdvice">
+      <div class="advice-content">
+        <i class="fas fa-quote-left" style="opacity: 0.2; font-size: 1.5rem; margin-bottom: 10px; display: block;"></i>
+        {{ aiAdvice }}
+      </div>
+    </div>
+    <div class="advice-placeholder" *ngIf="!aiAdvice">
+      Analyzing your spending patterns...
+    </div>
+  </div>
+
+  <!-- ROW 4 -->
   <div class="card bucket">
     <h2><i class="fas fa-archive me-2"></i> The Bucket</h2>
     <div class="bucket-container" *ngIf="spends.length > 0; else emptyBucket">
@@ -106,32 +125,12 @@
     </ng-template>
   </div>
 
-  <!-- ROW 4 -->
-  <div class="insights">
-    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 15px;">
-      <i class="fas fa-lightbulb text-warning fa-2x"></i>
-      <div>
-        <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Highest</div>
-        <div style="font-size: 1.2rem; font-weight: 800;">{{highestCategory}}</div>
-      </div>
-    </div>
-    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 15px;">
-      <i class="fas fa-calendar-check text-primary fa-2x"></i>
-      <div>
-        <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Peak Day</div>
-        <div style="font-size: 1.2rem; font-weight: 800;">{{peakDay}}</div>
-      </div>
-    </div>
-    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 15px;">
-      <i class="fas fa-bolt text-danger fa-2x"></i>
-      <div>
-        <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Peak Hour</div>
-        <div style="font-size: 1.2rem; font-weight: 800;">{{peakHour}}</div>
-      </div>
-    </div>
+  <!-- ROW 5: Personality Wheel -->
+  <div class="card wheel">
+    <i class="fas fa-brain me-3"></i> {{personality}}
   </div>
 
-  <!-- ROW 5 -->
+  <!-- ROW 6: Heatmap -->
   <div class="card heatmap">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
       <h2 style="margin: 0; font-size: 1.2rem;">
@@ -153,9 +152,29 @@
     </div>
   </div>
 
-  <!-- ROW 6 -->
-  <div class="card wheel" style="background: linear-gradient(135deg, var(--primary), var(--success)); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: bold;">
-    <i class="fas fa-brain me-3"></i> {{personality}}
+  <!-- ROW 7: Insights (Bottom Side-by-Side) -->
+  <div class="insights">
+    <div class="card">
+      <i class="fas fa-lightbulb text-warning fa-2x" style="margin-bottom: 10px;"></i>
+      <div>
+        <div style="font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Highest</div>
+        <div style="font-size: 1.1rem; font-weight: 800;">{{highestCategory}}</div>
+      </div>
+    </div>
+    <div class="card">
+      <i class="fas fa-calendar-check text-primary fa-2x" style="margin-bottom: 10px;"></i>
+      <div>
+        <div style="font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Peak Day</div>
+        <div style="font-size: 1.1rem; font-weight: 800;">{{peakDay}}</div>
+      </div>
+    </div>
+    <div class="card">
+      <i class="fas fa-bolt text-danger fa-2x" style="margin-bottom: 10px;"></i>
+      <div>
+        <div style="font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Peak Hour</div>
+        <div style="font-size: 1.1rem; font-weight: 800;">{{peakHour}}</div>
+      </div>
+    </div>
   </div>
 
 </div>

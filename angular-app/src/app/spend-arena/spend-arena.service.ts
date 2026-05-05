@@ -16,6 +16,7 @@ export class SpendArenaService {
 
   constructor(private http: HttpClient) {
     this.checkAndResetDaily();
+    this.syncWithDatabase();
   }
 
   private getInitialState(): ArenaState {
@@ -159,5 +160,40 @@ export class SpendArenaService {
     });
 
     return split;
+  }
+
+  public getAIAdvice(userId: string): Observable<{ advice: string }> {
+    return this.http.get<{ advice: string }>(`${this.API_URL}/ai/consult?userId=${userId}`);
+  }
+
+  public syncWithDatabase(): void {
+    const now = new Date();
+    // Get YYYY-MM-DD in local time
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
+    this.http.get<any[]>(`${this.API_URL}/transactions?userId=${this.userId}`).subscribe({
+      next: (txns) => {
+        const todaySpends: SpendEntry[] = txns
+          .filter(t => {
+            const tDate = t.date || t.createdAt;
+            return tDate && tDate.includes(todayStr) && t.type === 'expense';
+          })
+          .map(t => ({
+            id: t.id.toString(),
+            amount: t.amount,
+            category: t.category as any,
+            timestamp: t.date || t.createdAt
+          }));
+        
+        const currentState = this.stateSubject.value;
+        this.saveState({
+          ...currentState,
+          spends: todaySpends,
+          date: todayStr
+        });
+        console.log(`[Arena] Sync complete. Found ${todaySpends.length} expenses for ${todayStr}`);
+      },
+      error: (err) => console.error('[Arena] DB Sync Failed:', err)
+    });
   }
 }
