@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | FinBuddy AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="bg-gradient"></div>
+
+    <div class="login-container">
+        <div class="login-box">
+            <!-- Logo -->
+            <a href="index.html" class="logo">
+                <div class="logo-icon"><i class="fas fa-wallet"></i></div>
+                FinBuddy <span class="logo-ai">AI</span>
+            </a>
+
+            <h2>Create Account</h2>
+            <p class="subtitle">Join the Indian informal economy revolution</p>
+
+            <form id="register-form">
+                <div class="input-group">
+                    <label for="reg-name">Business Name / User Name</label>
+                    <input type="text" id="reg-name" placeholder="e.g. Rahul Stores" required>
+                </div>
+                <div class="input-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" placeholder="Create a strong password" required>
+                </div>
+                <div class="input-group">
+                    <label for="reg-type">Business Type</label>
+                    <select id="reg-type" required>
+                        <option value="" disabled selected>Select your business type</option>
+                        <option value="goods">Selling Goods (40L GST Limit)</option>
+                        <option value="services">Providing Services (20L GST Limit)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:0.5rem;">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+
+            <p style="margin-top:1.75rem; text-align:center; font-size:0.875rem; color:#8FA3C8;">
+                Already have an account?
+                <a href="login.html" style="color:#4B7BF5; font-weight:600; margin-left:4px;">Login Here</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<div class="page-container">
+  <div class="header-actions">
+    <h2>Transactions Management</h2>
+    <button class="btn-primary" (click)="toggleForm()">
+      {{ showForm ? 'Cancel' : 'Add Transaction' }}
+    </button>
+  </div>
+
+  <!-- Add Transaction Form -->
+  <div *ngIf="showForm" class="form-container card">
+    <h3>New Transaction</h3>
+    <form (ngSubmit)="onSubmit()" #txnForm="ngForm">
+      <div class="form-group">
+        <label>Amount</label>
+        <input type="number" [(ngModel)]="newTxn.amount" name="amount" required>
+      </div>
+
+      <div class="form-group">
+        <label>Type</label>
+        <select [(ngModel)]="newTxn.type" name="type" required>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Category</label>
+        <input type="text" [(ngModel)]="newTxn.category" name="category" required>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" [(ngModel)]="newTxn.description" name="description" required>
+      </div>
+
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="newTxn.date" name="date" required>
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="!txnForm.valid || submitting">
+        {{ submitting ? 'Saving...' : 'Save Transaction' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <label>Filter by:</label>
+    <select [(ngModel)]="filterType" (change)="applyFilter()" class="filter-select">
+      <option value="all">All</option>
+      <option value="income">Income</option>
+      <option value="expense">Expense</option>
+    </select>
+  </div>
+
+  <div *ngIf="loading" class="loading-spinner">Loading transactions...</div>
+
+  <!-- Transaction List -->
+  <div *ngIf="!loading" class="transaction-list">
+    <div class="txn-card" *ngFor="let txn of filteredTransactions">
+      <div class="txn-info">
+        <h4>{{ txn.description }}</h4>
+        <span class="category-badge">{{ txn.category }}</span>
+        <small>{{ txn.date | date }}</small>
+      </div>
+      <div class="txn-actions">
+        <span class="amount" [ngClass]="txn.type">${{ txn.amount }}</span>
+        <button class="btn-danger" (click)="onDelete(txn._id)">Delete</button>
+      </div>
+    </div>
+    
+    <div *ngIf="filteredTransactions.length === 0" class="empty-state">
+      No transactions found.
+    </div>
+  </div>
+</div>

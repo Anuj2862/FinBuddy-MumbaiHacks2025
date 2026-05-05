@@ -1,0 +1,72 @@
+<div class="page-container">
+  <h2>Dashboard Overview</h2>
+  
+  <div *ngIf="loading" class="loading-spinner">
+    Loading your financial data...
+  </div>
+
+  <div *ngIf="error" class="error-msg">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && summary" class="dashboard-content">
+    
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="card income">
+        <h3>Total Income</h3>
+        <p class="amount">${{ summary.totalIncome }}</p>
+      </div>
+      <div class="card expense">
+        <h3>Total Expense</h3>
+        <p class="amount">${{ summary.totalExpense }}</p>
+      </div>
+      <div class="card balance">
+        <h3>Balance</h3>
+        <p class="amount">${{ summary.balance }}</p>
+      </div>
+      <div class="card savings">
+        <h3>Savings %</h3>
+        <p class="amount">{{ summary.savingsPercentage }}%</p>
+      </div>
+    </div>
+
+    <!-- Category Visuals (Simple) -->
+    <div class="category-bars">
+      <h3>Quick Breakdown</h3>
+      <div class="bar-container">
+        <div class="bar income-bar" [style.width.%]="50">Income</div>
+        <div class="bar expense-bar" [style.width.%]="50">Expense</div>
+      </div>
+    </div>
+
+    <!-- Recent Transactions Table -->
+    <div class="recent-transactions">
+      <h3>Recent Transactions (Last 5)</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Type</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let txn of recentTransactions">
+            <td>{{ txn.date | date:'shortDate' }}</td>
+            <td>{{ txn.description }}</td>
+            <td>{{ txn.category }}</td>
+            <td [ngClass]="txn.type">{{ txn.type }}</td>
+            <td>${{ txn.amount }}</td>
+          </tr>
+          <tr *ngIf="recentTransactions.length === 0">
+            <td colspan="5" class="empty-state">No recent transactions found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>

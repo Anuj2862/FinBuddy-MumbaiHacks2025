@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --blue:        #4B7BF5;
+  --blue-dark:   #3B6AE0;
+  --blue-light:  #EEF4FF;
+  --navy:        #1A2340;
+  --text-body:   #2D3A5E;
+  --text-muted:  #8FA3C8;
+  --card:        #FFFFFF;
+  --border:      #DDE8F8;
+  --bg:          #EEF4FF;
+  --blob:        #DCE9FA;
+  --success:     #3A9E5F;
+  --warning:     #F0A500;
+  --danger:      #E8735A;
+
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light;
+  color: var(--text-body);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #E8F0FB;
+  background-attachment: fixed;
+  color: var(--text-body);
+}
+
+#root { width: 100%; }

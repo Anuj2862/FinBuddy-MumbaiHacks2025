@@ -1,0 +1,826 @@
+/* =============================================
+   FinBuddy AI — Exact Screenshot Theme
+   Blue #4B7BF5 | Navy #1A2340 | BG #EEF4FF
+   ============================================= */
+
+body, html {
+  background: linear-gradient(180deg, #87CEEB 0%, #C5E8F7 40%, #E8F4FB 70%, #F5FAFF 100%);
+  background-attachment: fixed;
+  color: #2D3A5E;
+  font-family: 'Outfit', -apple-system, sans-serif;
+  min-height: 100vh;
+}
+
+/* ── Fixed full-page background: clean sky-blue gradient only ── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(180deg,
+    #87CEEB 0%,
+    #C5E8F7 35%,
+    #E8F4FB 65%,
+    #F5FAFF 100%
+  );
+}
+
+.premium-bg {
+  background: transparent;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Navbar ── */
+.glass-navbar {
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid #DDE8F8 !important;
+  box-shadow: 0 2px 16px rgba(26, 35, 64, 0.06);
+}
+
+/* ── Nav buttons ── */
+.btn-nav-inactive {
+  background: transparent;
+  border: none;
+  color: #2D3A5E;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-nav-inactive:hover {
+  background: rgba(75, 123, 245, 0.08);
+  color: #4B7BF5;
+}
+
+/* ── Cards ── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(75, 123, 245, 0.12);
+}
+
+.glass-card.income-card:hover {
+  box-shadow: 0 10px 28px rgba(58, 158, 95, 0.18);
+}
+
+.glass-card.expense-card:hover {
+  box-shadow: 0 10px 28px rgba(232, 115, 90, 0.18);
+}
+
+/* ── Text Gradients ── */
+.text-gradient-primary {
+  background: linear-gradient(135deg, #4B7BF5, #87CEEB);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
+.text-gradient-success {
+  background: linear-gradient(135deg, #3A9E5F, #6DC48A);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-danger {
+  background: linear-gradient(135deg, #E8735A, #D45F47);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-warning {
+  background: linear-gradient(135deg, #F0A500, #F5C842);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Inner Progress ── */
+.inner-progress {
+  height: 5px;
+  background: #EEF4FF;
+  border-radius: 4px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.inner-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #4B7BF5, #8BA7C7);
+  transition: width 1s ease-out;
+}
+
+/* ── Card Icons ── */
+.card-icon { font-size: 22px; margin-bottom: 8px; }
+
+/* ── Progress Bars ── */
+.progress-glass {
+  background: #EEF4FF;
+  border-radius: 8px;
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid #DDE8F8;
+}
+
+.progress-bar-glow {
+  background: linear-gradient(90deg, #4B7BF5, #7BA3F8);
+  box-shadow: 0 0 8px rgba(75, 123, 245, 0.4);
+  border-radius: 8px;
+  height: 100%;
+  transition: width 1s ease-out;
+}
+
+/* ── Table ── */
+.table-glass { color: #2D3A5E; }
+
+.table-glass th {
+  border-bottom: 1px solid #DDE8F8 !important;
+  color: #8FA3C8;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  padding: 0.9rem 0.5rem;
+}
+
+.table-glass td {
+  border-bottom: 1px solid #EEF4FF !important;
+  padding: 0.9rem 0.5rem;
+  vertical-align: middle;
+  background-color: transparent !important;
+  color: #2D3A5E;
+}
+
+.table-glass tr:hover td { background: #F4F8FF !important; }
+
+/* ── Buttons ── */
+.btn-glass {
+  background: rgba(75, 123, 245, 0.06);
+  border: 1.5px solid #DDE8F8;
+  color: #2D3A5E;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.btn-glass:hover {
+  background: #EEF4FF;
+  border-color: #4B7BF5;
+  color: #4B7BF5;
+}
+
+.btn-glow-primary {
+  background: linear-gradient(135deg, #4B7BF5, #87CEEB);
+  border: 2px solid white !important;
+  color: white;
+  box-shadow: 0 6px 20px rgba(75, 123, 245, 0.3);
+  transition: all 0.3s ease;
+  font-weight: 600;
+  border-radius: 12px;
+}
+
+.btn-glow-primary:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(75, 123, 245, 0.45);
+  color: white;
+  background: linear-gradient(135deg, #3B6AE0, #4B7BF5);
+}
+
+.btn-glow-success {
+  background: linear-gradient(135deg, #3A9E5F, #2D8A50);
+  border: none;
+  color: white;
+  box-shadow: 0 6px 18px rgba(58, 158, 95, 0.35);
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.btn-glow-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(58, 158, 95, 0.5);
+  color: white;
+}
+
+/* ── Badges ── */
+.badge-glass-success {
+  background: rgba(58, 158, 95, 0.1);
+  color: #3A9E5F;
+  border: 1px solid rgba(58, 158, 95, 0.25);
+  padding: 0.35em 0.8em;
+  font-weight: 600;
+  border-radius: 20px;
+  font-size: 0.78rem;
+}
+
+.badge-glass-danger {
+  background: rgba(232, 115, 90, 0.1);
+  color: #E8735A;
+  border: 1px solid rgba(232, 115, 90, 0.25);
+  padding: 0.35em 0.8em;
+  font-weight: 600;
+  border-radius: 20px;
+  font-size: 0.78rem;
+}
+
+/* ── Inputs ── */
+.input-glass {
+  background: #F4F8FF !important;
+  border: 1.5px solid #DDE8F8 !important;
+  color: #1A2340 !important;
+  border-radius: 10px;
+  font-family: inherit;
+}
+
+.input-glass:focus {
+  background: #FFFFFF !important;
+  border-color: #4B7BF5 !important;
+  box-shadow: 0 0 0 3px rgba(75, 123, 245, 0.15) !important;
+  color: #1A2340 !important;
+}
+
+.input-glass::placeholder { color: #8FA3C8; }
+
+.form-input {
+  background: #F4F8FF;
+  color: #1A2340;
+  border-radius: 10px;
+  padding: 10px 14px;
+  border: 1.5px solid #DDE8F8;
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus {
+  border-color: #4B7BF5;
+  box-shadow: 0 0 0 3px rgba(75, 123, 245, 0.15);
+  background: #FFFFFF;
+}
+
+/* ── Quick Add Buttons ── */
+.quick-btn {
+  background: linear-gradient(135deg, #EEF4FF, #DDE8F8);
+  color: #4B7BF5;
+  padding: 6px 16px;
+  border-radius: 30px;
+  margin: 4px;
+  cursor: pointer;
+  border: 1.5px solid rgba(75, 123, 245, 0.3);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.quick-btn:hover {
+  background: linear-gradient(135deg, #4B7BF5, #87CEEB);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(75, 123, 245, 0.3);
+}
+
+.quick-btn:active { transform: scale(0.97); }
+
+/* ── Misc ── */
+.suggestion { font-size: 0.75rem; color: #8FA3C8; margin-top: 4px; display: block; }
+.warning    { color: #F0A500; font-weight: 600; }
+.danger     { color: #E8735A; font-weight: 600; }
+.summary    { font-size: 0.875rem; color: #8FA3C8; font-weight: 500; }
+
+.edit-btn { color: #8FA3C8; cursor: pointer; background: none; border: none; transition: color 0.2s; }
+.edit-btn:hover { color: #4B7BF5; }
+
+/* ── Undo Toast ── */
+.toast-undo {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: #FFFFFF;
+  padding: 12px 20px;
+  border-radius: 14px;
+  color: #1A2340;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #DDE8F8;
+  box-shadow: 0 8px 24px rgba(26, 35, 64, 0.12);
+  font-weight: 500;
+}
+
+/* ── Category Chip ── */
+.category-chip {
+  background: #EEF4FF;
+  padding: 5px 12px;
+  border-radius: 20px;
+  color: #1A2340;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid #DDE8F8;
+  margin-right: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.category-chip:hover {
+  background: #4B7BF5;
+  color: white;
+  border-color: #4B7BF5;
+}
+
+/* ── Error / Empty ── */
+.error {
+  color: #E8735A;
+  text-align: center;
+  padding: 20px;
+  background: #FEF0EE;
+  border-radius: 12px;
+  border: 1px solid rgba(232, 115, 90, 0.25);
+  font-weight: 500;
+}
+
+.empty { text-align: center; color: #8FA3C8; padding: 40px; }
+
+/* ── Pinned ── */
+.pinned { border-left: 3px solid #F0A500 !important; }
+.pin-btn { color: #F0A500; cursor: pointer; background: none; border: none; transition: transform 0.2s; }
+.pin-btn:hover { transform: scale(1.2); }
+.pin-btn.unpinned { color: #C8D8EC; }
+
+/* ── FAB ── */
+.fab {
+  position: fixed;
+  bottom: 32px; right: 32px;
+  background: linear-gradient(135deg, #4B7BF5, #87CEEB);
+  border: none;
+  color: white;
+  font-size: 22px;
+  border-radius: 50%;
+  width: 58px; height: 58px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(75, 123, 245, 0.4);
+  transition: all 0.25s ease;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fab:hover {
+  transform: scale(1.12) rotate(45deg);
+  box-shadow: 0 12px 32px rgba(75, 123, 245, 0.6);
+}
+
+/* ── Section divider ── */
+.section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #DDE8F8;
+}
+
+/* ── Glow shadows ── */
+.shadow-glow         { box-shadow: 0 0 16px rgba(75, 123, 245, 0.35); }
+.shadow-glow-success { box-shadow: 0 0 16px rgba(58, 158, 95, 0.4); }
+.shadow-glow-danger  { box-shadow: 0 0 16px rgba(232, 115, 90, 0.4); }
+
+/* ── Chat scrollbar ── */
+.chat-window::-webkit-scrollbar { width: 5px; }
+.chat-window::-webkit-scrollbar-track { background: transparent; }
+.chat-window::-webkit-scrollbar-thumb { background: #DDE8F8; border-radius: 10px; }
+.chat-window::-webkit-scrollbar-thumb:hover { background: #8FA3C8; }
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: fadeIn 0.5s ease-out forwards; }
+
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.75; transform: scale(0.98); }
+}
+.animate-pulse { animation: pulse 1.5s infinite; }
+
+/* ── Analytics container ── */
+.analytics-container { max-width: 1200px; margin: 0 auto; }
+
+/* =============================================
+   LANDING PAGE — Video Background + Coin Button
+   ============================================= */
+
+/* Full-page landing wrapper */
+.landing-page {
+  position: relative;
+  min-height: calc(100vh - 80px);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* ── Video background ── */
+.video-bg-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.video-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Semi-transparent overlay so text stays readable */
+.video-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(232, 240, 251, 0.72);
+  backdrop-filter: blur(1px);
+}
+
+/* ── Landing content sits above video ── */
+.landing-content {
+  position: relative;
+  z-index: 2;
+  padding: 4rem 2rem 5rem;
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* Text colors on video bg */
+.landing-icon    { color: #4B7BF5; }
+.landing-title   { color: #1A2340; text-shadow: 0 2px 12px rgba(255,255,255,0.6); }
+.landing-subtitle { color: #1A2340; font-weight: 500; }
+
+.landing-btn-ghost {
+  background: rgba(255, 255, 255, 0.75);
+  color: #1A2340;
+  border: 2px solid #4B7BF5 !important;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 18px rgba(75, 123, 245, 0.18), 0 1.5px 6px rgba(26, 35, 64, 0.10);
+  transition: all 0.22s ease;
+}
+
+.landing-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #3B6AE0 !important;
+  color: #4B7BF5;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(75, 123, 245, 0.25);
+}
+
+/* ── Landing cards — centered, float on hover ── */
+.landing-cards {
+  max-width: 960px;
+  margin: 0 auto !important;
+  justify-content: center !important;
+}
+
+.landing-card {
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(221, 232, 248, 0.9) !important;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.28s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.landing-card:hover {
+  transform: translateY(-10px) scale(1.03) !important;
+  box-shadow: 0 20px 48px rgba(75, 123, 245, 0.18),
+              0 8px 20px rgba(26, 35, 64, 0.10) !important;
+}
+
+.landing-card-title { color: #1A2340; font-weight: 600; }
+.landing-card-text  { color: #5A6E8C; }
+
+/* ── Coin-shaped audio toggle button ── */
+.coin-audio-btn {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 1000;
+
+  /* Coin shape */
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+
+  /* Coin gradient — gold/amber */
+  background: radial-gradient(circle at 35% 35%, #F5D060, #E8A020 55%, #C07010 100%);
+  border: 3px solid #D4900A;
+  box-shadow:
+    0 4px 0 #A06008,
+    0 6px 18px rgba(200, 130, 10, 0.55),
+    inset 0 2px 4px rgba(255, 240, 160, 0.6);
+
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.coin-audio-btn:hover {
+  transform: translateY(-3px) scale(1.08);
+  box-shadow:
+    0 6px 0 #A06008,
+    0 10px 28px rgba(200, 130, 10, 0.65),
+    inset 0 2px 4px rgba(255, 240, 160, 0.6);
+}
+
+.coin-audio-btn:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow:
+    0 2px 0 #A06008,
+    0 4px 12px rgba(200, 130, 10, 0.4),
+    inset 0 2px 4px rgba(255, 240, 160, 0.6);
+}
+
+/* Dollar symbol on coin */
+.coin-audio-btn__symbol {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(150, 80, 0, 0.5);
+}
+
+/* Volume icon below symbol */
+.coin-audio-btn__icon {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1;
+}
+
+/* Glowing ring when audio is ON */
+.coin-audio-btn--on {
+  animation: coin-pulse 2s ease-in-out infinite;
+  box-shadow:
+    0 4px 0 #A06008,
+    0 6px 18px rgba(200, 130, 10, 0.55),
+    0 0 0 0 rgba(232, 160, 32, 0.7),
+    inset 0 2px 4px rgba(255, 240, 160, 0.6);
+}
+
+@keyframes coin-pulse {
+  0%   { box-shadow: 0 4px 0 #A06008, 0 6px 18px rgba(200,130,10,0.55), 0 0 0 0   rgba(232,160,32,0.7), inset 0 2px 4px rgba(255,240,160,0.6); }
+  50%  { box-shadow: 0 4px 0 #A06008, 0 6px 18px rgba(200,130,10,0.55), 0 0 0 14px rgba(232,160,32,0),   inset 0 2px 4px rgba(255,240,160,0.6); }
+  100% { box-shadow: 0 4px 0 #A06008, 0 6px 18px rgba(200,130,10,0.55), 0 0 0 0   rgba(232,160,32,0.7), inset 0 2px 4px rgba(255,240,160,0.6); }
+}
+
+/* ── Text overrides — removed .text-white override to avoid conflicts ── */
+.text-muted  { color: #8FA3C8 !important; }
+
+/* ── Dashboard / analytics heading colors ── */
+.analytics-container h3,
+.analytics-container h5 { color: #1A2340 !important; }
+
+.glass-card h3,
+.glass-card h5,
+.glass-card h4 { color: #1A2340 !important; }
+
+/* Bootstrap overrides */
+.bg-primary   { background-color: #4B7BF5 !important; }
+.text-primary { color: #4B7BF5 !important; }
+.text-success { color: #3A9E5F !important; }
+.text-danger  { color: #E8735A !important; }
+.text-warning { color: #F0A500 !important; }
+.text-info    { color: #8FA3C8 !important; }
+.btn-primary  { background-color: #4B7BF5 !important; border-color: #4B7BF5 !important; }
+.btn-primary:hover { background-color: #3B6AE0 !important; border-color: #3B6AE0 !important; }
+.badge.bg-primary { background-color: #EEF4FF !important; color: #4B7BF5 !important; }
+.spinner-border.text-primary { color: #4B7BF5 !important; }
+
+/* ── Chat bubbles ── */
+.bg-glass {
+  background: #F4F8FF;
+  border: 1px solid #DDE8F8;
+}
+
+/* =============================================
+   DARK THEME
+   Apply by adding class "dark" to <body>
+   ============================================= */
+
+body.dark {
+  background: linear-gradient(180deg, #0d1117 0%, #161b22 40%, #1c2333 100%) !important;
+  color: #e6edf3 !important;
+}
+
+body.dark::before {
+  background-color: #0d1117;
+  opacity: 0.3;
+}
+
+body.dark .glass-navbar {
+  background: rgba(22, 27, 34, 0.95) !important;
+  border-color: rgba(48, 54, 61, 0.8) !important;
+}
+
+/* ── Dark cards ── */
+body.dark .glass-card {
+  background: rgba(22, 27, 34, 0.85) !important;
+  border-color: rgba(48, 54, 61, 0.6) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ── ALL text inside dark cards → light ── */
+body.dark .glass-card,
+body.dark .glass-card p,
+body.dark .glass-card span,
+body.dark .glass-card div,
+body.dark .glass-card small { color: #e6edf3; }
+
+body.dark .glass-card h2,
+body.dark .glass-card h3,
+body.dark .glass-card h4,
+body.dark .glass-card h5,
+body.dark .glass-card h6 { color: #e6edf3 !important; }
+
+/* ── Analytics headings ── */
+body.dark .analytics-container h3,
+body.dark .analytics-container h4,
+body.dark .analytics-container h5 { color: #e6edf3 !important; }
+
+/* ── Inline style overrides for hardcoded colors ── */
+body.dark [style*="color:#1A2340"],
+body.dark [style*="color: #1A2340"],
+body.dark [style*="color:#2D3A5E"],
+body.dark [style*="color: #2D3A5E"] { color: #e6edf3 !important; }
+
+body.dark .text-white { color: #e6edf3 !important; }
+body.dark .text-muted  { color: #8b949e !important; }
+
+/* ── Table ── */
+body.dark .table-glass { color: #e6edf3; }
+body.dark .table-glass td {
+  color: #e6edf3 !important;
+  border-color: rgba(48, 54, 61, 0.5) !important;
+}
+body.dark .table-glass th {
+  color: #8b949e !important;
+  border-color: rgba(48, 54, 61, 0.5) !important;
+}
+body.dark .table-glass tr:hover td { background: rgba(48, 54, 61, 0.4) !important; }
+
+/* ── Inputs ── */
+body.dark .form-input {
+  background: #161b22 !important;
+  border-color: rgba(48, 54, 61, 0.8) !important;
+  color: #e6edf3 !important;
+}
+body.dark .form-input:focus {
+  background: #1c2333 !important;
+  border-color: #4B7BF5 !important;
+}
+body.dark .form-input::placeholder { color: #8b949e !important; }
+
+/* ── Buttons ── */
+body.dark .quick-btn {
+  background: rgba(75, 123, 245, 0.15);
+  color: #7BA3F8;
+  border-color: rgba(75, 123, 245, 0.3);
+}
+body.dark .category-chip {
+  background: rgba(48, 54, 61, 0.6);
+  color: #e6edf3;
+  border-color: rgba(48, 54, 61, 0.8);
+}
+body.dark .btn-glass {
+  background: rgba(75, 123, 245, 0.1);
+  border-color: rgba(48, 54, 61, 0.6);
+  color: #e6edf3;
+}
+body.dark .btn-nav-inactive { color: #8b949e; }
+body.dark .btn-nav-inactive:hover {
+  color: #7BA3F8;
+  background: rgba(75, 123, 245, 0.1);
+}
+
+/* ── Misc ── */
+body.dark .section { border-color: rgba(48, 54, 61, 0.5) !important; }
+body.dark .progress-glass { background: rgba(48, 54, 61, 0.6); }
+body.dark .inner-progress  { background: rgba(48, 54, 61, 0.6); }
+body.dark .summary { color: #7BA3F8 !important; }
+body.dark .suggestion { color: #8b949e !important; }
+body.dark .empty { color: #8b949e !important; }
+
+/* ── Toast ── */
+body.dark .toast-undo {
+  background: #161b22;
+  color: #e6edf3;
+  border-color: rgba(48, 54, 61, 0.8);
+}
+
+/* ── Landing cards ── */
+body.dark .landing-card { background: rgba(22, 27, 34, 0.85) !important; }
+body.dark .landing-card-title { color: #e6edf3 !important; }
+body.dark .landing-card-text  { color: #8b949e !important; }
+body.dark .landing-title   { color: #e6edf3 !important; text-shadow: none !important; }
+body.dark .landing-subtitle { color: #8b949e !important; }
+body.dark .landing-icon    { color: #7BA3F8 !important; }
+
+/* ── Chat ── */
+body.dark .bg-glass {
+  background: rgba(22, 27, 34, 0.8) !important;
+  border-color: rgba(48, 54, 61, 0.6) !important;
+  color: #e6edf3 !important;
+}
+
+/* ── Navbar logo stays gradient ── */
+body.dark .glass-navbar h2 { color: transparent; }
+
+/* -- Feature: Transaction Search Bar -- */
+#txnSearch {
+  border-radius: 0 10px 10px 0;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+#txnSearch:focus {
+  background: white;
+  box-shadow: none;
+}
+
+.input-group-text {
+  border-radius: 10px 0 0 10px;
+  background: rgba(255, 255, 255, 0.5) !important;
+  border-color: #dee2e6 !important;
+}
+
+/* -- Feature: Custom Bootstrap Tooltip Styling -- */
+.tooltip-inner {
+  background-color: #1A2340 !important;
+  color: #fff !important;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: 'Outfit', sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.tooltip .tooltip-arrow::before {
+  border-top-color: #1A2340 !important;
+}
+
+/* -- Feature: Card Lift Animation -- */
+.glass-card {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* -- Navbar Utility Buttons -- */
+.btn-util {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(75, 123, 245, 0.2);
+  color: #2D3A5E;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  margin-left: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-util:hover {
+  background: #4B7BF5;
+  color: white;
+  border-color: #4B7BF5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(75, 123, 245, 0.2);
+}

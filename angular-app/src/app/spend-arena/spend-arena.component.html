@@ -1,0 +1,161 @@
+<div class="header">
+  <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto 30px;">
+    <!-- LOGO SECTION (Match Home Page) -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <i class="fas fa-wallet" style="font-size: 2rem; color: #1A2340;"></i>
+      <h2 style="font-size: 1.8rem; font-weight: 800; color: #1A2340; margin: 0; letter-spacing: -0.5px;">
+        FinBuddy <span style="color: #4B7BF5;">AI</span>
+      </h2>
+    </div>
+
+    <div style="text-align: center; flex: 1;">
+      <h1 class="arena-title">
+        <i class="fas fa-arena-border"></i> Today's Spend Arena
+      </h1>
+      <p style="margin: 0; opacity: 0.8; font-weight: 500; color: #1A2340;">Drop your expenses in the bucket and track live progress</p>
+    </div>
+
+    <button (click)="goToDashboard()" class="back-btn">
+      <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+    </button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ROW 1 -->
+  <div class="card goal">
+    <h2 style="font-size: 1.1rem; color: #a0a0b0; margin-bottom: 5px;">
+      <i class="fas fa-bullseye me-2" style="color: var(--primary);"></i> Daily Goal
+    </h2>
+    <div style="font-size: 1.8rem; font-weight: bold;">₹{{ dailyGoal }}</div>
+  </div>
+  
+  <div class="card streak" style="display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; color: var(--warning);">
+    <i class="fas fa-fire me-2"></i> {{ streak }} Day Streak
+  </div>
+
+  <!-- ROW 2 -->
+  <div class="card tracker">
+    <h2><i class="fas fa-chart-line me-2"></i> Live Tracker</h2>
+    
+    <div class="progress-container">
+      <div class="progress-stats">
+        <span [ngClass]="colorClass">Spent: ₹{{ totalSpent | number:'1.0-2' }}</span>
+        <span style="opacity: 0.7;">Goal: ₹{{ dailyGoal }}</span>
+      </div>
+      <div class="progress">
+        <div class="progress-fill" 
+             [style.width.%]="progress"
+             [ngClass]="colorBgClass"></div>
+      </div>
+    </div>
+
+    <form [formGroup]="spendForm" (ngSubmit)="addSpend()">
+      <div class="form-group">
+        <div class="form-row">
+          <div>
+            <label for="amount">Amount (₹)</label>
+            <input type="number" id="amount" formControlName="amount" placeholder="0" min="1">
+          </div>
+          <div>
+            <label for="category">Category</label>
+            <select id="category" formControlName="category">
+              <option value="Food">Food</option>
+              <option value="Transport">Transport</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn" [disabled]="spendForm.invalid">
+        <i class="fas fa-plus-circle me-2"></i> Drop in Bucket
+      </button>
+    </form>
+    
+    <!-- Floating Animation Elements -->
+    <div *ngFor="let f of floaters" class="float">
+      +₹{{ f.amount }}
+    </div>
+  </div>
+
+  <div class="card graph">
+    <h2 style="font-size: 1.1rem; margin-bottom: 16px;">
+      <i class="fas fa-chart-pie me-2" style="color: var(--primary);"></i> Category Split
+    </h2>
+    <app-pie3d [slices]="pie3dSlices" [size]="300"></app-pie3d>
+  </div>
+
+  <!-- ROW 3 -->
+  <div class="card bucket">
+    <h2><i class="fas fa-archive me-2"></i> The Bucket</h2>
+    <div class="bucket-container" *ngIf="spends.length > 0; else emptyBucket">
+      <div *ngFor="let item of spends" @dropIn class="bucket-item">
+        <div class="item-left">
+          <span class="item-icon"><i [className]="getIcon(item.category)"></i></span>
+          <span>{{ item.category }}</span>
+        </div>
+        <span class="item-amount">₹{{ item.amount | number:'1.0-2' }}</span>
+      </div>
+    </div>
+    <ng-template #emptyBucket>
+      <div style="text-align: center; opacity: 0.6; padding: 20px;">
+        Bucket is empty today. Let's keep it that way!
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- ROW 4 -->
+  <div class="insights">
+    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 15px;">
+      <i class="fas fa-lightbulb text-warning fa-2x"></i>
+      <div>
+        <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Highest</div>
+        <div style="font-size: 1.2rem; font-weight: 800;">{{highestCategory}}</div>
+      </div>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 15px;">
+      <i class="fas fa-calendar-check text-primary fa-2x"></i>
+      <div>
+        <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Peak Day</div>
+        <div style="font-size: 1.2rem; font-weight: 800;">{{peakDay}}</div>
+      </div>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 15px;">
+      <i class="fas fa-bolt text-danger fa-2x"></i>
+      <div>
+        <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Peak Hour</div>
+        <div style="font-size: 1.2rem; font-weight: 800;">{{peakHour}}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 5 -->
+  <div class="card heatmap">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h2 style="margin: 0; font-size: 1.2rem;">
+        <i class="fas fa-th me-2" style="color: var(--success);"></i> 30-Day Activity
+      </h2>
+      <div class="comparison-card" style="font-size: 0.9rem;">
+        Vs Yesterday: 
+        <span [ngClass]="percentage >= 0 ? 'up' : 'down'" style="font-weight: bold;">
+          {{percentage > 0 ? '+' : ''}}{{percentage | number:'1.0-0'}}%
+        </span>
+      </div>
+    </div>
+    
+    <div class="heatmap-grid">
+      <div *ngFor="let day of heatmapData"
+           class="cell"
+           [ngClass]="day.level">
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 6 -->
+  <div class="card wheel" style="background: linear-gradient(135deg, var(--primary), var(--success)); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: bold;">
+    <i class="fas fa-brain me-3"></i> {{personality}}
+  </div>
+
+</div>
