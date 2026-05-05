@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (name && password) {
                 console.log('Authenticating...', name);
-                fetch('http://localhost:5000/api/login', {
+                fetch('http://localhost:5001/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, password })
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (name && password) {
                 console.log('Registering...', name);
-                fetch('http://localhost:5000/api/register', {
+                fetch('http://localhost:5001/api/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, password, businessType })

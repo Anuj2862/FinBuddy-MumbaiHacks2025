@@ -59,12 +59,12 @@ body::before {
 
 /* ── Cards ── */
 .glass-card {
-  background: rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 1);
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.12);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   position: relative;
   z-index: 1;
@@ -85,7 +85,7 @@ body::before {
 
 /* ── Text Gradients ── */
 .text-gradient-primary {
-  background: linear-gradient(135deg, #4B7BF5, #87CEEB);
+  background: linear-gradient(135deg, #1A2340, #4B7BF5);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -154,7 +154,7 @@ body::before {
 
 .table-glass th {
   border-bottom: 1px solid #DDE8F8 !important;
-  color: #8FA3C8;
+  color: #4B5E7D;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -257,7 +257,7 @@ body::before {
   color: #1A2340 !important;
 }
 
-.input-glass::placeholder { color: #8FA3C8; }
+.input-glass::placeholder { color: #5A6E8C; }
 
 .form-input {
   background: #F4F8FF;
@@ -302,12 +302,12 @@ body::before {
 .quick-btn:active { transform: scale(0.97); }
 
 /* ── Misc ── */
-.suggestion { font-size: 0.75rem; color: #8FA3C8; margin-top: 4px; display: block; }
+.suggestion { font-size: 0.75rem; color: #5A6E8C; margin-top: 4px; display: block; }
 .warning    { color: #F0A500; font-weight: 600; }
 .danger     { color: #E8735A; font-weight: 600; }
-.summary    { font-size: 0.875rem; color: #8FA3C8; font-weight: 500; }
+.summary    { font-size: 0.875rem; color: #5A6E8C; font-weight: 500; }
 
-.edit-btn { color: #8FA3C8; cursor: pointer; background: none; border: none; transition: color 0.2s; }
+.edit-btn { color: #5A6E8C; cursor: pointer; background: none; border: none; transition: color 0.2s; }
 .edit-btn:hover { color: #4B7BF5; }
 
 /* ── Undo Toast ── */
@@ -358,7 +358,7 @@ body::before {
   font-weight: 500;
 }
 
-.empty { text-align: center; color: #8FA3C8; padding: 40px; }
+.empty { text-align: center; color: #5A6E8C; padding: 40px; }
 
 /* ── Pinned ── */
 .pinned { border-left: 3px solid #F0A500 !important; }
@@ -603,7 +603,7 @@ body::before {
 }
 
 /* ── Text overrides — removed .text-white override to avoid conflicts ── */
-.text-muted  { color: #8FA3C8 !important; }
+.text-muted  { color: #5A6E8C !important; }
 
 /* ── Dashboard / analytics heading colors ── */
 .analytics-container h3,
@@ -619,11 +619,12 @@ body::before {
 .text-success { color: #3A9E5F !important; }
 .text-danger  { color: #E8735A !important; }
 .text-warning { color: #F0A500 !important; }
-.text-info    { color: #8FA3C8 !important; }
+.text-info    { color: #5A6E8C !important; }
 .btn-primary  { background-color: #4B7BF5 !important; border-color: #4B7BF5 !important; }
 .btn-primary:hover { background-color: #3B6AE0 !important; border-color: #3B6AE0 !important; }
 .badge.bg-primary { background-color: #EEF4FF !important; color: #4B7BF5 !important; }
 .spinner-border.text-primary { color: #4B7BF5 !important; }
+.text-navy { color: #1A2340 !important; }
 
 /* ── Chat bubbles ── */
 .bg-glass {
@@ -680,10 +681,13 @@ body.dark .analytics-container h5 { color: #e6edf3 !important; }
 body.dark [style*="color:#1A2340"],
 body.dark [style*="color: #1A2340"],
 body.dark [style*="color:#2D3A5E"],
-body.dark [style*="color: #2D3A5E"] { color: #e6edf3 !important; }
+body.dark [style*="color: #2D3A5E"],
+body.dark [style*="color:#5A6E8C"],
+body.dark [style*="color: #5A6E8C"] { color: #e6edf3 !important; }
 
 body.dark .text-white { color: #e6edf3 !important; }
 body.dark .text-muted  { color: #8b949e !important; }
+body.dark .text-navy   { color: #e6edf3 !important; }
 
 /* ── Table ── */
 body.dark .table-glass { color: #e6edf3; }
@@ -750,9 +754,9 @@ body.dark .toast-undo {
 body.dark .landing-card { background: rgba(22, 27, 34, 0.85) !important; }
 body.dark .landing-card-title { color: #e6edf3 !important; }
 body.dark .landing-card-text  { color: #8b949e !important; }
-body.dark .landing-title   { color: #e6edf3 !important; text-shadow: none !important; }
-body.dark .landing-subtitle { color: #8b949e !important; }
-body.dark .landing-icon    { color: #7BA3F8 !important; }
+body.dark .landing-title   { color: #1A2340 !important; text-shadow: 0 2px 12px rgba(255,255,255,0.6) !important; }
+body.dark .landing-subtitle { color: #1A2340 !important; }
+body.dark .landing-icon    { color: #4B7BF5 !important; }
 
 /* ── Chat ── */
 body.dark .bg-glass {
@@ -823,4 +827,15 @@ body.dark .glass-navbar h2 { color: transparent; }
   border-color: #4B7BF5;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(75, 123, 245, 0.2);
+}
+
+body.dark .btn-util {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(48, 54, 61, 0.6);
+  color: #e6edf3;
+}
+
+body.dark .btn-util:hover {
+  background: #4B7BF5;
+  color: white;
 }

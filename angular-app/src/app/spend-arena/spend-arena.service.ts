@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ArenaState, SpendEntry } from './models/spend.model';
 
@@ -7,11 +8,13 @@ import { ArenaState, SpendEntry } from './models/spend.model';
 })
 export class SpendArenaService {
   private readonly STORAGE_KEY = 'spend_arena_state';
+  private readonly API_URL = 'http://localhost:5001/api';
   private stateSubject = new BehaviorSubject<ArenaState>(this.getInitialState());
   
   public state$: Observable<ArenaState> = this.stateSubject.asObservable();
+  private userId = '5'; // Corrected ID for Sharma for Demo
 
-  constructor() {
+  constructor(private http: HttpClient) {
     this.checkAndResetDaily();
   }
 
@@ -27,15 +30,31 @@ export class SpendArenaService {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Map old structure to new structure if needed, or just return
-        if (parsed.date) {
-           return parsed;
-        }
+        if (parsed.date && parsed.spends && parsed.spends.length > 0) return parsed;
       } catch (e) {
         console.error('Error parsing Arena State from localStorage', e);
       }
     }
-    return defaultState;
+
+    // Default Seed Data for Demo
+    const todayStr = new Date().toISOString().split('T')[0];
+    const seedSpends: SpendEntry[] = [
+      { id: 's1', amount: 320, category: 'Shopping', timestamp: new Date().toISOString() },
+      { id: 's2', amount: 150, category: 'Food', timestamp: new Date().toISOString() },
+      { id: 's3', amount: 80,  category: 'Transport', timestamp: new Date().toISOString() },
+      { id: 's4', amount: 50,  category: 'Other', timestamp: new Date().toISOString() }
+    ];
+
+    const seededState: ArenaState = {
+      dailyGoal: 1000,
+      spends: seedSpends,
+      date: todayStr,
+      streak_days: 5
+    };
+    
+    // Save the seeded state so it persists
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(seededState));
+    return seededState;
   }
 
   private saveState(state: ArenaState): void {
@@ -102,6 +121,19 @@ export class SpendArenaService {
       streak_days: currentStreak
     };
     this.saveState(newState);
+
+    // PERSIST TO SQL DB
+    this.http.post(`${this.API_URL}/transactions`, {
+      userId: this.userId,
+      amount: amount,
+      type: 'expense',
+      category: category,
+      description: 'Spend Arena Drop',
+      date: new Date()
+    }).subscribe({
+      next: (res) => console.log('[Arena] Persisted to SQL:', res),
+      error: (err) => console.error('[Arena] DB Sync Failed:', err)
+    });
   }
 
   public updateDailyGoal(goal: number): void {

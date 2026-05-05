@@ -115,13 +115,13 @@ export function Analytics({ lang = 'en' }: { lang?: 'en' | 'hi' }) {
       const userId = localStorage.getItem('finbuddy_user_id') || 'guest';
       const headers = { 'Authorization': `Bearer ${userId}` };
 
-      const summaryRes = await fetch('http://localhost:5000/api/summary', { headers });
+      const summaryRes = await fetch('http://localhost:5001/api/summary', { headers });
       if (!summaryRes.ok) throw new Error('Failed to fetch summary');
       const summaryData = await summaryRes.json();
       setSummary(summaryData);
       if (summaryData.dailyTrend) setDailyTrend(summaryData.dailyTrend);
 
-      const txnRes = await fetch('http://localhost:5000/api/transactions', { headers });
+      const txnRes = await fetch('http://localhost:5001/api/transactions', { headers });
       if (!txnRes.ok) throw new Error('Failed to fetch transactions');
       const txnData = await txnRes.json();
       setTransactions(txnData);
@@ -168,7 +168,7 @@ export function Analytics({ lang = 'en' }: { lang?: 'en' | 'hi' }) {
     e.preventDefault();
     try {
       const userId = localStorage.getItem('finbuddy_user_id') || 'guest';
-      const url = isEditing ? `http://localhost:5000/api/transactions/${isEditing}` : 'http://localhost:5000/api/transactions';
+      const url = isEditing ? `http://localhost:5001/api/transactions/${isEditing}` : 'http://localhost:5001/api/transactions';
       const method = isEditing ? 'PUT' : 'POST';
 
       await fetch(url, {
@@ -202,7 +202,7 @@ export function Analytics({ lang = 'en' }: { lang?: 'en' | 'hi' }) {
 
   const handleQuickAdd = async (amount: number, category: string, desc: string) => {
     const userId = localStorage.getItem('finbuddy_user_id') || 'guest';
-    await fetch('http://localhost:5000/api/transactions', {
+    await fetch('http://localhost:5001/api/transactions', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userId}` },
       body: JSON.stringify({ amount, type: 'expense', category, description: desc, date: new Date(), userId })
     });
@@ -220,7 +220,7 @@ export function Analytics({ lang = 'en' }: { lang?: 'en' | 'hi' }) {
 
   const handleTogglePin = async (txn: any) => {
     const userId = localStorage.getItem('finbuddy_user_id') || 'guest';
-    await fetch(`http://localhost:5000/api/transactions/${txn._id}`, {
+    await fetch(`http://localhost:5001/api/transactions/${txn._id}`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userId}` },
       body: JSON.stringify({ isPinned: !txn.isPinned })
     });
@@ -233,7 +233,7 @@ export function Analytics({ lang = 'en' }: { lang?: 'en' | 'hi' }) {
 
     const userId = localStorage.getItem('finbuddy_user_id') || 'guest';
     try {
-      await fetch(`http://localhost:5000/api/transactions/${txn._id}`, {
+      await fetch(`http://localhost:5001/api/transactions/${txn._id}`, {
         method: 'DELETE', headers: { 'Authorization': `Bearer ${userId}` }
       });
       fetchDashboardData(); // Update summary and list from server
@@ -255,7 +255,7 @@ export function Analytics({ lang = 'en' }: { lang?: 'en' | 'hi' }) {
     const userId = localStorage.getItem('finbuddy_user_id') || 'guest';
     try {
       // Restore by re-adding the transaction
-      await fetch('http://localhost:5000/api/transactions', {
+      await fetch('http://localhost:5001/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userId}` },
         body: JSON.stringify({ 
@@ -272,7 +272,7 @@ export function Analytics({ lang = 'en' }: { lang?: 'en' | 'hi' }) {
     }
   };
 
-  if (loading) return <div className="p-5 text-center" style={{color:'#2D3561'}}><div className="spinner-border" style={{color:'#E8735A'}} role="status"></div></div>;
+  if (loading) return <div className="p-5 text-center" style={{color:'#1A2340'}}><div className="spinner-border" style={{color:'#E8735A'}} role="status"></div></div>;
 
   const chartData = {
     labels: dailyTrend.map(d => d.date),
@@ -290,11 +290,11 @@ export function Analytics({ lang = 'en' }: { lang?: 'en' | 'hi' }) {
       easing: 'easeOutQuart' as const
     },
     plugins: {
-      legend: { position: 'top' as const, labels: { color: '#3D4A6B', font: { family: 'Outfit' } } },
+      legend: { position: 'top' as const, labels: { color: '#1A2340', font: { family: 'Outfit', weight: '600' } } },
     },
     scales: {
-      y: { ticks: { color: '#7A8BAD' }, grid: { color: 'rgba(45,53,97,0.06)' } },
-      x: { ticks: { color: '#7A8BAD' }, grid: { color: 'rgba(45,53,97,0.06)' } },
+      y: { ticks: { color: '#4B5E7D' }, grid: { color: 'rgba(45,53,97,0.1)' } },
+      x: { ticks: { color: '#4B5E7D' }, grid: { color: 'rgba(45,53,97,0.1)' } },
     },
   };
 
@@ -345,7 +345,7 @@ export function Analytics({ lang = 'en' }: { lang?: 'en' | 'hi' }) {
 
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 section">
         <div>
-          <h3 className="fw-bold mb-0" style={{color:"#2D3561"}}>{t.finOverview}</h3>
+          <h3 className="fw-bold mb-0" style={{color:"#1A2340"}}>{t.finOverview}</h3>
           <div className="summary mt-1">{t.todaySpent}: ₹<AnimatedNumber value={todayExpense} /> {t.spent}</div>
         </div>
         <div className="d-flex flex-wrap gap-2">

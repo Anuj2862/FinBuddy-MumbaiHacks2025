@@ -240,3 +240,74 @@ input[type="number"]:focus {
     gap: 24px;
   }
 }
+
+/* -- New Features -- */
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leader-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: #F8FBFF;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.leader-item .rank {
+  font-weight: 800;
+  color: var(--primary);
+  width: 24px;
+  font-size: 0.9rem;
+}
+
+.leader-item .avatar {
+  font-size: 1.2rem;
+  margin-right: 10px;
+}
+
+.leader-item .name {
+  flex: 1;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.leader-item .streak-val {
+  font-weight: 700;
+  color: var(--warning);
+}
+
+.challenge-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.challenge-item {
+  padding: 12px;
+  background: #F4F8FD;
+  border-left: 4px solid var(--primary);
+  border-radius: 0 10px 10px 0;
+}
+
+.c-title {
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.c-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.c-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 600;
+}

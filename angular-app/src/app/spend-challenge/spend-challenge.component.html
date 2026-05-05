@@ -79,6 +79,34 @@
         </div>
       </div>
 
+      <!-- Community Leaderboard -->
+      <div class="card">
+        <h2>Local Leaderboard</h2>
+        <div class="leaderboard-list">
+          <div class="leader-item" *ngFor="let user of leaderboard">
+            <span class="rank">{{ user.rank }}</span>
+            <span class="avatar">{{ user.avatar }}</span>
+            <span class="name">{{ user.name }}</span>
+            <span class="streak-val">{{ user.streak }}d 🔥</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Challenges -->
+      <div class="card">
+        <h2>Active Challenges</h2>
+        <div class="challenge-list">
+          <div class="challenge-item" *ngFor="let c of activeChallenges">
+            <div class="c-title">{{ c.title }}</div>
+            <div class="c-desc">{{ c.desc }}</div>
+            <div class="c-meta">
+              <span>{{ c.reward }}</span>
+              <span>👥 {{ c.participants }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

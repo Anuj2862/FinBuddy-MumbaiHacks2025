@@ -65,7 +65,7 @@ export function VoiceChat() {
         try {
             const userId = localStorage.getItem('finbuddy_user_id') || 'guest';
 
-            const response = await fetch('http://localhost:5000/api/process', {
+            const response = await fetch('http://localhost:5001/api/process', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

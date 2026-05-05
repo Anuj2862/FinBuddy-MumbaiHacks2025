@@ -114,8 +114,8 @@ function App() {
 
           {activeTab !== 'home' && (
             <div className="d-flex align-items-center gap-3">
-              <span className="d-none d-md-inline" style={{ color: '#8FA3C8' }}>
-                Welcome, <strong style={{ color: '#1A2340' }}>{userName}</strong>
+              <span className="d-none d-md-inline text-muted">
+                Welcome, <strong className="text-navy">{userName}</strong>
               </span>
               <div
                 className="btn-group"
@@ -162,13 +162,13 @@ function App() {
           )}
 
           {activeTab === 'home' && !userId && (
-            <button className="btn btn-glow-primary rounded-pill px-4" onClick={() => window.location.href = 'http://localhost:5000/login.html'}>
+            <button className="btn btn-glow-primary rounded-pill px-4" onClick={() => window.location.href = 'http://localhost:5001/login.html'}>
               Login / Join Now
             </button>
           )}
           {activeTab === 'home' && userId && (
             <div className="d-flex align-items-center gap-3">
-              <span style={{ color: '#8FA3C8' }}>Hi, {userName}</span>
+              <span style={{ color: '#5A6E8C' }}>Hi, {userName}</span>
               <button className="btn btn-nav-inactive btn-sm" onClick={handleLogout}>Logout</button>
             </div>
           )}
@@ -204,7 +204,7 @@ function App() {
                       <i className="fas fa-th-large me-2" /> Open Dashboard
                     </button>
                   ) : (
-                    <button className="btn btn-glow-primary btn-lg px-5 py-3 rounded-pill" onClick={() => window.location.href = 'http://localhost:5000/login.html'}>
+                    <button className="btn btn-glow-primary btn-lg px-5 py-3 rounded-pill" onClick={() => window.location.href = 'http://localhost:5001/login.html'}>
                       <i className="fas fa-sign-in-alt me-2" /> Get Started / Login
                     </button>
                   )}
@@ -251,7 +251,7 @@ function App() {
         </div>
 
         <div className="p-3 text-center border-top mt-auto" style={{ borderColor: '#DDE8F8' }}>
-          <small style={{ color: '#8FA3C8' }}>© 2026 FinBuddy AI - Indian Informal Economy Financial Freedom</small>
+          <small style={{ color: '#5A6E8C' }}>© 2026 FinBuddy AI - Indian Informal Economy Financial Freedom</small>
         </div>
       </div>
     </div>

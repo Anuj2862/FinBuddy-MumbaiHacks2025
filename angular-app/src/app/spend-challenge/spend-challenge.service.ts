@@ -7,7 +7,7 @@ import { Transaction, ChallengeState } from './models/challenge.model';
   providedIn: 'root'
 })
 export class SpendChallengeService {
-  private apiUrl = 'http://localhost:5000/api';
+  private apiUrl = 'http://localhost:5001/api';
   private storageKey = 'spend_challenge_state';
 
   constructor(private http: HttpClient) {}

@@ -23,6 +23,19 @@ export class SpendChallengeComponent implements OnInit, OnDestroy {
   badges: string[] = [];
   feedbackMessage: string = '';
   
+  // Mock data for demo
+  leaderboard: any[] = [
+    { name: 'Rajesh G.', streak: 12, rank: 1, avatar: '👤' },
+    { name: 'Sharma P.', streak: 5, rank: 2, avatar: '👤' },
+    { name: 'Amit K.', streak: 4, rank: 3, avatar: '👤' },
+    { name: 'Sunita M.', streak: 2, rank: 4, avatar: '👤' }
+  ];
+
+  activeChallenges: any[] = [
+    { title: 'Tea-Totaler', desc: 'Spend ₹0 on beverages today', reward: '☕ Badge', participants: 124 },
+    { title: 'Walk to Work', desc: '₹0 on transport today', reward: '👟 Badge', participants: 86 }
+  ];
+  
   private destroy$ = new Subject<void>();
   
   constructor(
@@ -53,8 +66,10 @@ export class SpendChallengeComponent implements OnInit, OnDestroy {
     
     // Default budget if none exists
     if (this.budgetGoal === 0) {
-      this.budgetGoal = 500; // Default 500
+      this.budgetGoal = 800; // Updated default for demo
+      this.streak = 5; // Start with a nice streak for demo
       state.daily_budget = this.budgetGoal;
+      state.streak_days = this.streak;
       this.challengeService.saveState(state);
     }
     
