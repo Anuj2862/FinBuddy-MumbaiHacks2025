@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { Transaction } from '../../models/transaction.model';
 
+// Transactions page — CRUD operations for managing financial records
 @Component({
   selector: 'app-transactions',
   standalone: true,
@@ -21,6 +22,7 @@ export class TransactionsComponent implements OnInit {
   
   filterType: string = 'all';
 
+  // Default values for the "New Transaction" form (uses ngModel two-way binding)
   newTxn: Transaction = {
     amount: 0,
     type: 'expense',
@@ -31,10 +33,12 @@ export class TransactionsComponent implements OnInit {
 
   constructor(private apiService: ApiService) {}
 
+  // Fetches all transactions from backend on component load
   ngOnInit(): void {
     this.loadTransactions();
   }
 
+  // Makes HTTP GET to /api/transactions
   loadTransactions(): void {
     this.loading = true;
     this.apiService.getTransactions().subscribe({
@@ -50,10 +54,12 @@ export class TransactionsComponent implements OnInit {
     });
   }
 
+  // Toggles the "Add Transaction" form visibility
   toggleForm(): void {
     this.showForm = !this.showForm;
   }
 
+  // Submits new transaction to backend via HTTP POST
   onSubmit(): void {
     this.submitting = true;
     this.apiService.addTransaction(this.newTxn).subscribe({
@@ -71,6 +77,7 @@ export class TransactionsComponent implements OnInit {
     });
   }
 
+  // Deletes a transaction via HTTP DELETE after user confirms
   onDelete(id: string | undefined): void {
     if (!id) return;
     
@@ -87,6 +94,7 @@ export class TransactionsComponent implements OnInit {
     }
   }
 
+  // Filters transaction list by type (all / income / expense)
   applyFilter(): void {
     if (this.filterType === 'all') {
       this.filteredTransactions = [...this.transactions];
@@ -95,6 +103,7 @@ export class TransactionsComponent implements OnInit {
     }
   }
 
+  // Resets the form fields to default values
   resetForm(): void {
     this.newTxn = {
       amount: 0,

@@ -3,25 +3,31 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ArenaState, SpendEntry } from './models/spend.model';
 
+// @Injectable with 'root' means this service is a Singleton — one shared instance across the app
 @Injectable({
   providedIn: 'root'
 })
 export class SpendArenaService {
   private readonly STORAGE_KEY = 'spend_arena_state';
   private readonly API_URL = 'http://localhost:5001/api';
+
+  // BehaviorSubject holds the current state and emits it to all subscribers
   private stateSubject = new BehaviorSubject<ArenaState>(this.getInitialState());
   
+  // Public Observable that components subscribe to for real-time state updates
   public state$: Observable<ArenaState> = this.stateSubject.asObservable();
-  private userId = '5'; // Corrected ID for Sharma for Demo
+  private userId = '5'; // Hardcoded user ID for Sharma (demo account)
 
+  // Constructor — resets daily data if needed and syncs with SQLite database
   constructor(private http: HttpClient) {
     this.checkAndResetDaily();
     this.syncWithDatabase();
   }
 
+  // Loads state from localStorage, or creates seed data for demo
   private getInitialState(): ArenaState {
     const defaultState: ArenaState = {
-      dailyGoal: 1000, // Default goal
+      dailyGoal: 1000,
       spends: [],
       date: new Date().toISOString().split('T')[0],
       streak_days: 0
@@ -37,7 +43,7 @@ export class SpendArenaService {
       }
     }
 
-    // Default Seed Data for Demo
+    // Default seed data so the demo is never empty
     const todayStr = new Date().toISOString().split('T')[0];
     const seedSpends: SpendEntry[] = [
       { id: 's1', amount: 320, category: 'Shopping', timestamp: new Date().toISOString() },
@@ -53,22 +59,22 @@ export class SpendArenaService {
       streak_days: 5
     };
     
-    // Save the seeded state so it persists
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(seededState));
     return seededState;
   }
 
+  // Persists state to localStorage and notifies all subscribers
   private saveState(state: ArenaState): void {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
     this.stateSubject.next(state);
   }
 
+  // Checks if a new day has started — resets spends and updates streak
   private checkAndResetDaily(): void {
     const currentState = this.stateSubject.value;
     const todayStr = new Date().toISOString().split('T')[0];
     
     if (currentState.date !== todayStr) {
-      // Check if they were under budget yesterday
       const lastDate = new Date(currentState.date);
       const todayDate = new Date(todayStr);
       const diffTime = Math.abs(todayDate.getTime() - lastDate.getTime());
@@ -77,18 +83,16 @@ export class SpendArenaService {
       let newStreak = currentState.streak_days;
       
       if (diffDays === 1) {
-         // Consecutive day
          const totalYesterday = currentState.spends.reduce((acc, s) => acc + s.amount, 0);
          if (totalYesterday <= currentState.dailyGoal) {
             newStreak++;
          } else {
-            newStreak = 0; // Exceeded goal
+            newStreak = 0;
          }
       } else {
-         newStreak = 0; // Missed a day
+         newStreak = 0;
       }
 
-      // Reset spends for the new day
       const newState: ArenaState = {
         ...currentState,
         spends: [],
@@ -99,6 +103,7 @@ export class SpendArenaService {
     }
   }
 
+  // Adds a new expense to state, persists to SQLite via HTTP POST, and resets streak if over budget
   public addSpend(amount: number, category: 'Food' | 'Transport' | 'Shopping' | 'Other'): void {
     const currentState = this.stateSubject.value;
     const newSpend: SpendEntry = {
@@ -111,19 +116,18 @@ export class SpendArenaService {
     const newTotal = currentState.spends.reduce((acc, s) => acc + s.amount, 0) + amount;
     let currentStreak = currentState.streak_days;
     
-    // Immediate streak reset if they break the budget today
     if (newTotal > currentState.dailyGoal && currentStreak > 0) {
       currentStreak = 0;
     }
 
     const newState: ArenaState = {
       ...currentState,
-      spends: [newSpend, ...currentState.spends], // Newest first
+      spends: [newSpend, ...currentState.spends],
       streak_days: currentStreak
     };
     this.saveState(newState);
 
-    // PERSIST TO SQL DB
+    // Persist to SQL database so React Dashboard stays in sync
     this.http.post(`${this.API_URL}/transactions`, {
       userId: this.userId,
       amount: amount,
@@ -137,15 +141,18 @@ export class SpendArenaService {
     });
   }
 
+  // Updates the daily spending goal
   public updateDailyGoal(goal: number): void {
     const currentState = this.stateSubject.value;
     this.saveState({ ...currentState, dailyGoal: goal });
   }
 
+  // Returns sum of all today's spending amounts
   public getTotalSpent(): number {
     return this.stateSubject.value.spends.reduce((acc, spend) => acc + spend.amount, 0);
   }
 
+  // Returns spending totals grouped by category for the pie chart
   public getCategorySplit(): { [key: string]: number } {
     const spends = this.stateSubject.value.spends;
     const split: { [key: string]: number } = {
@@ -162,13 +169,14 @@ export class SpendArenaService {
     return split;
   }
 
+  // Makes HTTP GET to /api/ai/consult for AI-generated spending advice
   public getAIAdvice(userId: string): Observable<{ advice: string }> {
     return this.http.get<{ advice: string }>(`${this.API_URL}/ai/consult?userId=${userId}`);
   }
 
+  // Fetches today's transactions from SQLite and replaces local state for data consistency
   public syncWithDatabase(): void {
     const now = new Date();
-    // Get YYYY-MM-DD in local time
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     
     this.http.get<any[]>(`${this.API_URL}/transactions?userId=${this.userId}`).subscribe({
